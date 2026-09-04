@@ -1,0 +1,25 @@
+{
+  "name": "blitzkrieg",
+  "version": "0.1.0",
+  "private": true,
+  "description": "LAN-first competitive typing event platform.",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @blitzkrieg/frontend",
+    "dev:frontend": "npm run dev --workspace @blitzkrieg/frontend",
+    "dev:backend": "npm run dev --workspace @blitzkrieg/backend",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "devDependencies": {
+    "typescript-eslint": "^8.42.0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "type": "module"
+}
