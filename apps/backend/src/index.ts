@@ -185,8 +185,9 @@ app.post<{ Body: { stationCode: string } }>("/contest/reset-station", async (req
   try {
     resetSingleStation(request.body.stationCode, session.user.username);
     return { ok: true };
-  } catch (error: any) {
-    return reply.code(400).send({ message: error.message });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to reset station";
+    return reply.code(400).send({ message });
   }
 });
 
@@ -235,8 +236,9 @@ app.post<{ Body: { fromStationCode: string; toStationCode: string } }>("/contest
   try {
     transferParticipant(request.body.fromStationCode, request.body.toStationCode, session.user.username);
     return { ok: true };
-  } catch (error: any) {
-    return reply.code(400).send({ message: error.message });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to transfer participant";
+    return reply.code(400).send({ message });
   }
 });
 
@@ -311,8 +313,9 @@ app.post<{ Body: AttemptSubmissionRequest }>("/contest/submit", async (request, 
     );
 
     return { result };
-  } catch (error: any) {
-    return reply.code(400).send({ message: error.message });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to submit attempt";
+    return reply.code(400).send({ message });
   }
 });
 

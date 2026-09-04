@@ -1,4 +1,4 @@
-import type { AttemptResult, ContestSnapshot, ContestStatus, IncidentReport, Passage, StationStatus, ViolationType } from "@blitzkrieg/shared";
+import type { AttemptResult, ContestSnapshot, ContestStatus, IncidentReport, Passage, ViolationType } from "@blitzkrieg/shared";
 import { addAuditLog, getAuditLogs } from "./auditLog.js";
 import { getRandomPassage } from "./passages.js";
 import { listStations, getStation, assignStation, resetStationsToCleanState } from "./stations.js";

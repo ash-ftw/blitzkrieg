@@ -304,24 +304,6 @@ function HostDashboard({ session, snapshot, onLogout }: { session: SessionState;
     }).catch(() => undefined);
   }
 
-  async function handleResetSingleStation(stationCode: string) {
-    const action = prompt(`Station ${stationCode} Management:\nType 'RESET' to allow this contestant to retake their test.\nType 'DQ' to disqualify this station.`);
-    if (!action) return;
-
-    if (action.toUpperCase() === "RESET") {
-      await fetch("/api/contest/reset-station", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ stationCode })
-      }).catch(() => undefined);
-    } else if (action.toUpperCase() === "DQ") {
-      handleDisqualify(stationCode);
-    }
-  }
-
   return (
     <main className="app-shell">
       <section className="command-bar" aria-label="Host command bar">

@@ -1,4 +1,4 @@
-import { calculateQualifiers, disqualifyStation, finalizeContest, getContestSnapshot, recordViolation, startRound, submitAttempt } from "./contestEngine.js";
+import { calculateQualifiers, finalizeContest, getContestSnapshot, recordViolation, startRound, submitAttempt } from "./contestEngine.js";
 import { assignStation, getStation, listStations } from "./stations.js";
 
 export interface SimulationReport {
@@ -25,7 +25,7 @@ export function runFullMockCompetition(): SimulationReport {
   const startTime = Date.now();
 
   // Step 1: Assign & verify 50 stations
-  const stations = listStations();
+  listStations();
   for (let i = 0; i < 50; i++) {
     const stationCode = `PC-${String(i + 1).padStart(2, "0")}`;
     const participantCode = `BZK${String(i + 1).padStart(3, "0")}`;
@@ -120,10 +120,13 @@ export function runFullMockCompetition(): SimulationReport {
 }
 
 function generateTypedPassage(title: string, length: number, accuracy: number): string {
-  const chars = "The Essence of Systems engineering is an interdisciplinary field of engineering and management.";
+  const chars = `${title}: systems engineering and concurrent design fundamentals.`;
   let result = chars.substring(0, length);
   if (result.length < length) {
     result = result.padEnd(length, ".");
+  }
+  if (accuracy < 98 && result.length > 2) {
+    return result.slice(0, -1) + "x";
   }
   return result;
 }

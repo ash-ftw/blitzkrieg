@@ -57,7 +57,10 @@ export function SystemCheck({ stationCode, participantCode, onPassed }: SystemCh
       updateCheck(updated, "browser", isModern ? "pass" : "fail");
 
       // Fullscreen API Check
-      const fs = Boolean(document.fullscreenEnabled || (document as any).webkitFullscreenEnabled);
+      const fs = Boolean(
+        document.fullscreenEnabled ||
+        ("webkitFullscreenEnabled" in document && (document as unknown as { webkitFullscreenEnabled?: boolean }).webkitFullscreenEnabled)
+      );
       updateCheck(updated, "fullscreen", fs ? "pass" : "fail");
 
       // Station Identifier
