@@ -312,9 +312,16 @@ input:focus {
   font-size: 0.78rem;
 }
 
-.station-tile div {
+.station-tile-info {
   display: grid;
   gap: 0.22rem;
+  min-width: 0;
+}
+
+.station-email {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .station-status {
@@ -802,5 +809,350 @@ input:focus {
   justify-content: center;
 }
 
+/* Room Setup Styles */
+.room-setup-panel {
+  display: grid;
+  gap: 1.5rem;
+  background: color-mix(in srgb, var(--charcoal) 96%, black);
+  border: 1px solid var(--iron);
+  border-radius: 8px;
+  padding: 1.5rem;
+  width: min(100%, 48rem);
+  margin: 0 auto;
+}
 
+.email-textarea {
+  width: 100%;
+  background: #100f0f;
+  border: 1px solid var(--iron);
+  border-radius: 6px;
+  padding: 0.75rem;
+  color: #f2ede3;
+  font-family: inherit;
+  resize: vertical;
+}
 
+.email-textarea:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--gold) 62%, var(--iron));
+}
+
+.room-pin-display {
+  display: grid;
+  place-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  background: rgba(213, 160, 40, 0.08);
+  border: 1px dashed var(--gold);
+  border-radius: 8px;
+}
+
+.room-pin-display strong {
+  font-size: 3rem;
+  color: var(--crown);
+  letter-spacing: 0.2em;
+}
+
+.join-counter {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.join-count {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--ready);
+}
+
+.join-total {
+  color: var(--steel);
+}
+
+.add-email-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.add-email-row input {
+  flex: 1;
+}
+
+.email-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.email-chip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background: #100f0f;
+  border: 1px solid var(--iron);
+  border-radius: 6px;
+}
+
+.email-chip.joined {
+  border-color: color-mix(in srgb, var(--ready) 60%, var(--iron));
+}
+
+.chip-station {
+  font-family: monospace;
+  color: var(--gold);
+  background: rgba(213, 160, 40, 0.1);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.chip-status {
+  color: #fff;
+}
+
+.check-details {
+  font-size: 0.75rem;
+  color: var(--steel);
+  padding-left: 1.9rem;
+}
+
+.keyboard-prompt {
+  padding: 0.8rem 1rem;
+  border: 1px dashed var(--gold);
+  border-radius: 6px;
+  background: rgba(213, 160, 40, 0.08);
+  color: var(--crown);
+  font-size: 0.9rem;
+}
+
+.keyboard-prompt p {
+  margin: 0;
+}
+
+.audit-feed {
+  display: grid;
+  gap: 0.5rem;
+  max-height: 14rem;
+  overflow-y: auto;
+  font-size: 0.78rem;
+}
+
+.audit-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--iron);
+  border-radius: 4px;
+  background: #090808;
+}
+
+/* Modal Overlay & Dialog Card */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(8px);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 480px;
+  background: color-mix(in srgb, var(--charcoal) 96%, black);
+  border: 1px solid color-mix(in srgb, var(--gold) 40%, var(--iron));
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.85);
+  display: grid;
+  gap: 1.25rem;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--chalk);
+}
+
+.modal-details {
+  display: grid;
+  gap: 0.5rem;
+  background: var(--obsidian);
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--iron);
+  font-size: 0.9rem;
+}
+
+.modal-actions {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.modal-actions .button {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Room Setup Styles */
+.room-setup-panel {
+  display: grid;
+  gap: 1.5rem;
+  background: color-mix(in srgb, var(--charcoal) 96%, black);
+  border: 1px solid var(--iron);
+  border-radius: 8px;
+  padding: 1.5rem;
+  width: min(100%, 48rem);
+  margin: 0 auto;
+}
+
+.email-textarea {
+  width: 100%;
+  background: #100f0f;
+  border: 1px solid var(--iron);
+  border-radius: 6px;
+  padding: 0.75rem;
+  color: #f2ede3;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.email-textarea:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--gold) 62%, var(--iron));
+}
+
+.room-pin-display {
+  display: grid;
+  place-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  background: rgba(213, 160, 40, 0.08);
+  border: 1px dashed var(--gold);
+  border-radius: 8px;
+}
+
+.room-pin-display strong {
+  font-size: 3rem;
+  color: var(--crown);
+  letter-spacing: 0.2em;
+}
+
+.join-counter {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.join-count {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--ready);
+}
+
+.join-total {
+  color: var(--steel);
+}
+
+.add-email-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.add-email-row input {
+  flex: 1;
+}
+
+.email-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.email-chip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background: #100f0f;
+  border: 1px solid var(--iron);
+  border-radius: 6px;
+}
+
+.email-chip.joined {
+  border-color: color-mix(in srgb, var(--ready) 60%, var(--iron));
+}
+
+.chip-station {
+  font-family: monospace;
+  color: var(--gold);
+  background: rgba(213, 160, 40, 0.1);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.chip-status {
+  color: var(--ready);
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.subtle-mode-toggle {
+  background: transparent;
+  border: none;
+  color: var(--steel);
+  font-size: 0.75rem;
+  margin-top: 1.5rem;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.subtle-mode-toggle:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.countdown-overlay {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: color-mix(in srgb, var(--charcoal) 90%, black);
+  border: 1px solid var(--iron);
+  border-radius: 8px;
+  padding: 3rem;
+  margin-top: 2rem;
+}
+
+.countdown-overlay h1 {
+  font-size: 8rem;
+  color: var(--crown);
+  margin: 0;
+  line-height: 1;
+  animation: pulse 1s infinite;
+}
+
+.countdown-overlay p {
+  font-size: 2rem;
+  color: var(--chalk);
+  margin-top: 1rem;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}

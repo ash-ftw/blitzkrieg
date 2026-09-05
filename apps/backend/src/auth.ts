@@ -1,14 +1,33 @@
+/**
+ * auth.ts
+ *
+ * Authentication for the dynamic room-based system.
+ * - Host: logs in with username + password (hardcoded admin)
+ * - Participant: logs in with email + room PIN (dynamic)
+ */
+
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from "node:crypto";
 import type { AuthUser, LoginRequest, LoginResponse, Role } from "@blitzkrieg/shared";
+import {
+  getRoom,
+  hasAlreadyJoined,
+  isEmailWhitelisted,
+  recordParticipantJoin,
+  validateRoomPin
+} from "./room.js";
+import { assignNextStation, findStationByEmail } from "./stations.js";
 
-interface SeedUser {
+// ─── Host credentials ───────────────────────────────────────────────
+
+interface HostUser {
   id: string;
   username: string;
   passwordHash: string;
-  role: Role;
-  participantCode: string | null;
-  stationCode: string | null;
 }
+
+const hostUser: HostUser = createHostUser("host-1", "host", "host123");
+
+// ─── Sessions ───────────────────────────────────────────────────────
 
 export interface Session {
   token: string;
@@ -17,94 +36,123 @@ export interface Session {
 }
 
 export interface ParticipantSummary {
-  id: string;
-  username: string;
-  participantCode: string;
+  email: string;
   stationCode: string;
   hasActiveSession: boolean;
 }
 
-const sessionDurationMs = 2 * 60 * 60 * 1000;
-
-const users: SeedUser[] = [
-  createSeedUser({
-    id: "host-1",
-    username: "host",
-    password: "host123",
-    role: "HOST",
-    participantCode: null,
-    stationCode: null
-  }),
-  ...Array.from({ length: 50 }, (_, index) => {
-    const number = index + 1;
-
-    return createSeedUser({
-      id: `participant-${number}`,
-      username: `bzk${String(number).padStart(3, "0")}`,
-      password: "typing123",
-      role: "PARTICIPANT",
-      participantCode: `BZK${String(number).padStart(3, "0")}`,
-      stationCode: `PC-${String(number).padStart(2, "0")}`
-    });
-  })
-];
+const sessionDurationMs = 2 * 60 * 60 * 1000; // 2 hours
 
 const sessions = new Map<string, Session>();
+/** Map of email → session token (to prevent duplicate logins). */
 const participantSessionTokens = new Map<string, string>();
+
+// ─── Login ──────────────────────────────────────────────────────────
 
 export function login(request: LoginRequest): LoginResponse {
   pruneExpiredSessions();
 
-  const username = request.username?.trim() ?? "";
-  const user = users.find((candidate) => candidate.username.toLowerCase() === username.toLowerCase());
+  // ─ Host login (username + password) ─
+  if (request.username) {
+    return loginAsHost(request.username, request.password ?? "");
+  }
 
-  if (!user || !verifyPassword(request.password ?? "", user.passwordHash)) {
+  // ─ Participant login (email + roomPin) ─
+  if (request.email) {
+    return loginAsParticipant(request.email, request.roomPin ?? "");
+  }
+
+  throw new AuthError("Provide username (host) or email (participant) to log in", 400);
+}
+
+function loginAsHost(username: string, password: string): LoginResponse {
+  if (username.trim().toLowerCase() !== hostUser.username.toLowerCase()) {
     throw new AuthError("Invalid username or password", 401);
   }
 
-  if (user.role === "PARTICIPANT") {
-    const submittedStation = request.stationCode?.trim().toUpperCase();
-
-    if (!submittedStation) {
-      throw new AuthError("Station code is required for participant login", 400);
-    }
-
-    if (submittedStation !== user.stationCode) {
-      throw new AuthError("Participant is not assigned to this station", 403);
-    }
-
-    const activeToken = participantSessionTokens.get(user.id);
-    if (activeToken && sessions.has(activeToken)) {
-      throw new AuthError("Participant already has an active session", 409);
-    }
+  if (!verifyPassword(password, hostUser.passwordHash)) {
+    throw new AuthError("Invalid username or password", 401);
   }
 
   const token = randomUUID();
   const expiresAt = new Date(Date.now() + sessionDurationMs);
   const authUser: AuthUser = {
-    id: user.id,
-    username: user.username,
-    role: user.role,
-    participantCode: user.participantCode,
-    stationCode: user.stationCode
+    id: hostUser.id,
+    username: hostUser.username,
+    role: "HOST",
+    email: null,
+    stationCode: null
   };
 
-  sessions.set(token, {
-    token,
-    user: authUser,
-    expiresAt
-  });
+  sessions.set(token, { token, user: authUser, expiresAt });
 
-  if (user.role === "PARTICIPANT") {
-    participantSessionTokens.set(user.id, token);
+  return { token, user: authUser, expiresAt: expiresAt.toISOString() };
+}
+
+function loginAsParticipant(email: string, roomPin: string): LoginResponse {
+  const normalised = email.trim().toLowerCase();
+
+  // Validate room exists
+  const room = getRoom();
+  if (!room) {
+    throw new AuthError("No active competition room. Please wait for the host to create one.", 400);
   }
 
-  return {
-    token,
-    user: authUser,
-    expiresAt: expiresAt.toISOString()
-  };
+  // Validate room is open
+  if (!room.isOpen) {
+    throw new AuthError("The competition room is closed. No more participants can join.", 403);
+  }
+
+  // Validate PIN
+  if (!validateRoomPin(roomPin)) {
+    throw new AuthError("Invalid room PIN", 401);
+  }
+
+  // Validate email is whitelisted
+  if (!isEmailWhitelisted(normalised)) {
+    throw new AuthError("Your email is not registered for this competition. Contact the host.", 403);
+  }
+
+  // Check for duplicate session
+  const existingToken = participantSessionTokens.get(normalised);
+  if (existingToken && sessions.has(existingToken)) {
+    throw new AuthError("This email already has an active session. Contact the host if this is an error.", 409);
+  }
+
+  // Check if already joined (has a station assigned)
+  if (hasAlreadyJoined(normalised)) {
+    // They had a session before but it expired — let them rejoin their existing station
+    const existingStation = findStationByEmail(normalised);
+    if (existingStation) {
+      return createParticipantSession(normalised, existingStation.stationCode);
+    }
+  }
+
+  // Assign a new station dynamically
+  const station = assignNextStation(normalised);
+  recordParticipantJoin(normalised, station.stationCode);
+
+  return createParticipantSession(normalised, station.stationCode);
 }
+
+function createParticipantSession(email: string, stationCode: string): LoginResponse {
+  const token = randomUUID();
+  const expiresAt = new Date(Date.now() + sessionDurationMs);
+  const authUser: AuthUser = {
+    id: `participant-${email}`,
+    username: email,
+    role: "PARTICIPANT",
+    email,
+    stationCode
+  };
+
+  sessions.set(token, { token, user: authUser, expiresAt });
+  participantSessionTokens.set(email, token);
+
+  return { token, user: authUser, expiresAt: expiresAt.toISOString() };
+}
+
+// ─── Session management ─────────────────────────────────────────────
 
 export function getSession(token: string | undefined): Session | null {
   pruneExpiredSessions();
@@ -124,24 +172,41 @@ export function logout(token: string | undefined) {
   const session = sessions.get(token);
   sessions.delete(token);
 
-  if (session?.user.role === "PARTICIPANT") {
-    participantSessionTokens.delete(session.user.id);
+  if (session?.user.role === "PARTICIPANT" && session.user.email) {
+    participantSessionTokens.delete(session.user.email);
+  }
+}
+
+/** Force-logout a participant by email (used by host). */
+export function forceLogoutByEmail(email: string) {
+  const normalised = email.trim().toLowerCase();
+  const token = participantSessionTokens.get(normalised);
+  if (token) {
+    sessions.delete(token);
+    participantSessionTokens.delete(normalised);
   }
 }
 
 export function listParticipants(): ParticipantSummary[] {
   pruneExpiredSessions();
 
-  return users
-    .filter((user): user is SeedUser & { participantCode: string; stationCode: string } => user.role === "PARTICIPANT")
-    .map((user) => ({
-      id: user.id,
-      username: user.username,
-      participantCode: user.participantCode,
-      stationCode: user.stationCode,
-      hasActiveSession: Boolean(participantSessionTokens.get(user.id))
-    }));
+  const room = getRoom();
+  if (!room) return [];
+
+  return room.joinedParticipants.map((jp) => ({
+    email: jp.email,
+    stationCode: jp.stationCode,
+    hasActiveSession: Boolean(participantSessionTokens.get(jp.email) && sessions.has(participantSessionTokens.get(jp.email)!))
+  }));
 }
+
+/** Clear all sessions (used on contest reset). */
+export function clearAllSessions() {
+  sessions.clear();
+  participantSessionTokens.clear();
+}
+
+// ─── Error class ────────────────────────────────────────────────────
 
 export class AuthError extends Error {
   constructor(
@@ -152,14 +217,13 @@ export class AuthError extends Error {
   }
 }
 
-function createSeedUser(user: Omit<SeedUser, "passwordHash"> & { password: string }): SeedUser {
+// ─── Internal helpers ───────────────────────────────────────────────
+
+function createHostUser(id: string, username: string, password: string): HostUser {
   return {
-    id: user.id,
-    username: user.username,
-    passwordHash: hashPassword(user.password),
-    role: user.role,
-    participantCode: user.participantCode,
-    stationCode: user.stationCode
+    id,
+    username,
+    passwordHash: hashPassword(password)
   };
 }
 
@@ -190,8 +254,8 @@ function pruneExpiredSessions() {
     if (session.expiresAt.getTime() <= now) {
       sessions.delete(token);
 
-      if (session.user.role === "PARTICIPANT") {
-        participantSessionTokens.delete(session.user.id);
+      if (session.user.role === "PARTICIPANT" && session.user.email) {
+        participantSessionTokens.delete(session.user.email);
       }
     }
   }

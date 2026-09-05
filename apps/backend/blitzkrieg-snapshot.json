@@ -1,0 +1,902 @@
+{
+  "savedAt": "2026-09-05T18:28:32.665Z",
+  "contest": {
+    "name": "Blitzkrieg - College LAN Championship",
+    "status": "FINALIZED",
+    "round": 2,
+    "durationSeconds": 180,
+    "remainingSeconds": 0,
+    "isLocked": false,
+    "qualifierCount": 2,
+    "qualifiers": [
+      "contact@example.com",
+      "hello@example.com"
+    ],
+    "activePassage": {
+      "id": "passage-r2-01",
+      "title": "Low Latency Networking & High Concurrency",
+      "content": "In modern distributed network architectures, maintaining microsecond-level latency requires zero-copy buffer allocations, event-driven non-blocking socket handling, and optimized lock-free concurrency primitives. As node density scales across high-speed campus backbones, deterministic packet processing and memory locality dictate peak system throughput and operational stability under heavy burst workloads.",
+      "round": 2,
+      "difficulty": "HARD",
+      "wordCount": 50,
+      "characterCount": 410
+    },
+    "roundStartedAt": 1788632666591
+  },
+  "stations": [
+    {
+      "stationCode": "PC-01",
+      "hostname": "LAB-PC-01",
+      "status": "DISQUALIFIED",
+      "email": "noreply@example.com",
+      "activeSession": "bce34949-5730-4e07-b408-c90fabce5913",
+      "lastHeartbeatAt": "2026-09-05T18:28:27.744Z",
+      "wpm": 15,
+      "accuracy": 39.1,
+      "score": 587
+    },
+    {
+      "stationCode": "PC-02",
+      "hostname": "LAB-PC-02",
+      "status": "SUBMITTED",
+      "email": "hello@example.com",
+      "activeSession": "c8736e0a-1bb6-42a0-8ac8-60bbb6bf436a",
+      "lastHeartbeatAt": "2026-09-05T18:28:28.039Z",
+      "wpm": 42,
+      "accuracy": 62.3,
+      "score": 2617
+    },
+    {
+      "stationCode": "PC-03",
+      "hostname": "LAB-PC-03",
+      "status": "SUBMITTED",
+      "email": "contact@example.com",
+      "activeSession": "fe18c860-fa61-4129-8527-49a861e411d9",
+      "lastHeartbeatAt": "2026-09-05T18:28:31.729Z",
+      "wpm": 16,
+      "accuracy": 4.3,
+      "score": 69
+    }
+  ],
+  "nextStationNumber": 4,
+  "attempts": [
+    [
+      "noreply@example.com-1",
+      {
+        "email": "noreply@example.com",
+        "stationCode": "PC-01",
+        "round": 1,
+        "wpm": 15,
+        "accuracy": 39.1,
+        "score": 587,
+        "totalErrors": 42,
+        "submittedAt": "2026-09-05T18:17:52.113Z"
+      }
+    ],
+    [
+      "hello@example.com-1",
+      {
+        "email": "hello@example.com",
+        "stationCode": "PC-02",
+        "round": 1,
+        "wpm": 240,
+        "accuracy": 2.9,
+        "score": 696,
+        "totalErrors": 264,
+        "submittedAt": "2026-09-05T18:17:30.024Z"
+      }
+    ],
+    [
+      "contact@example.com-1",
+      {
+        "email": "contact@example.com",
+        "stationCode": "PC-03",
+        "round": 1,
+        "wpm": 55,
+        "accuracy": 29.7,
+        "score": 1634,
+        "totalErrors": 26,
+        "submittedAt": "2026-09-05T18:17:52.412Z"
+      }
+    ],
+    [
+      "hello@example.com-2",
+      {
+        "email": "hello@example.com",
+        "stationCode": "PC-02",
+        "round": 2,
+        "wpm": 42,
+        "accuracy": 62.3,
+        "score": 2617,
+        "totalErrors": 154,
+        "submittedAt": "2026-09-05T18:26:55.862Z"
+      }
+    ],
+    [
+      "contact@example.com-2",
+      {
+        "email": "contact@example.com",
+        "stationCode": "PC-03",
+        "round": 2,
+        "wpm": 16,
+        "accuracy": 4.3,
+        "score": 69,
+        "totalErrors": 221,
+        "submittedAt": "2026-09-05T18:27:28.230Z"
+      }
+    ]
+  ],
+  "incidents": [],
+  "auditLogs": [
+    {
+      "id": "audit-1788632881944-r9r7",
+      "timestamp": "11:58:01 PM",
+      "actor": "host",
+      "action": "FINALIZE_CONTEST",
+      "target": "COMPETITION",
+      "details": "Contest finalized. Official results frozen."
+    },
+    {
+      "id": "audit-1788632848230-283r",
+      "timestamp": "11:57:28 PM",
+      "actor": "contact@example.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-03",
+      "details": "Submitted Round 2: 16 WPM, 4.3% Accuracy, Score 69"
+    },
+    {
+      "id": "audit-1788632848014-uv8n",
+      "timestamp": "11:57:28 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_COMPLETE",
+      "target": "ROUND_2",
+      "details": "Round 2 timer reached zero."
+    },
+    {
+      "id": "audit-1788632815862-zwe1",
+      "timestamp": "11:56:55 PM",
+      "actor": "hello@example.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-02",
+      "details": "Submitted Round 2: 42 WPM, 62.3% Accuracy, Score 2617"
+    },
+    {
+      "id": "audit-1788632666591-4jkh",
+      "timestamp": "11:54:26 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_BEGIN",
+      "target": "ROUND_2",
+      "details": "Round 2 typing phase started (180s)"
+    },
+    {
+      "id": "audit-1788632661547-au30",
+      "timestamp": "11:54:21 PM",
+      "actor": "host",
+      "action": "START_ROUND",
+      "target": "ROUND_2",
+      "details": "Initiating Round 2 with a 5s countdown"
+    },
+    {
+      "id": "audit-1788632294515-bf3a",
+      "timestamp": "11:48:14 PM",
+      "actor": "host",
+      "action": "CALCULATE_QUALIFIERS",
+      "target": "TOP_2",
+      "details": "Selected 2 qualifiers for Round 2."
+    },
+    {
+      "id": "audit-1788632272412-nckv",
+      "timestamp": "11:47:52 PM",
+      "actor": "contact@example.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-03",
+      "details": "Submitted Round 1: 55 WPM, 29.7% Accuracy, Score 1634"
+    },
+    {
+      "id": "audit-1788632272113-er6n",
+      "timestamp": "11:47:52 PM",
+      "actor": "noreply@example.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-01",
+      "details": "Submitted Round 1: 15 WPM, 39.1% Accuracy, Score 587"
+    },
+    {
+      "id": "audit-1788632272095-y402",
+      "timestamp": "11:47:52 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_COMPLETE",
+      "target": "ROUND_1",
+      "details": "Round 1 timer reached zero."
+    },
+    {
+      "id": "audit-1788632250025-5cgo",
+      "timestamp": "11:47:30 PM",
+      "actor": "hello@example.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-02",
+      "details": "Submitted Round 1: 240 WPM, 2.9% Accuracy, Score 696"
+    },
+    {
+      "id": "audit-1788632211518-61nb",
+      "timestamp": "11:46:51 PM",
+      "actor": "host",
+      "action": "RESTART_ROUND",
+      "target": "ROUND_1",
+      "details": "Restarted Round 1 with new passage \"Algorithms in Motion\""
+    },
+    {
+      "id": "audit-1788631150596-4m4p",
+      "timestamp": "11:29:10 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_COMPLETE",
+      "target": "ROUND_1",
+      "details": "Round 1 timer reached zero."
+    },
+    {
+      "id": "audit-1788631103359-72j0",
+      "timestamp": "11:28:23 PM",
+      "actor": "hello@example.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-02",
+      "details": "Submitted Round 1: 268 WPM, 1.1% Accuracy, Score 295"
+    },
+    {
+      "id": "audit-1788631090090-zgl9",
+      "timestamp": "11:28:10 PM",
+      "actor": "host",
+      "action": "RESTART_ROUND",
+      "target": "ROUND_1",
+      "details": "Restarted Round 1 with new passage \"The Essence of Systems\""
+    },
+    {
+      "id": "audit-1788631066927-ays2",
+      "timestamp": "11:27:46 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_BEGIN",
+      "target": "ROUND_2",
+      "details": "Round 2 typing phase started (180s)"
+    },
+    {
+      "id": "audit-1788631061910-wkw3",
+      "timestamp": "11:27:41 PM",
+      "actor": "host",
+      "action": "START_ROUND",
+      "target": "ROUND_2",
+      "details": "Initiating Round 2 with a 5s countdown"
+    },
+    {
+      "id": "audit-1788631017865-mzt5",
+      "timestamp": "11:26:57 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_COMPLETE",
+      "target": "ROUND_1",
+      "details": "Round 1 timer reached zero."
+    },
+    {
+      "id": "audit-1788630986499-my2x",
+      "timestamp": "11:26:26 PM",
+      "actor": "hello@example.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-02",
+      "details": "Submitted Round 1: 438 WPM, 2.9% Accuracy, Score 1270"
+    },
+    {
+      "id": "audit-1788630977221-gd45",
+      "timestamp": "11:26:17 PM",
+      "actor": "noreply@example.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-01",
+      "details": "Submitted Round 1: 164 WPM, 8.5% Accuracy, Score 1394"
+    },
+    {
+      "id": "audit-1788630957375-kd1p",
+      "timestamp": "11:25:57 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_BEGIN",
+      "target": "ROUND_1",
+      "details": "Round 1 typing phase started (60s)"
+    },
+    {
+      "id": "audit-1788630952344-8t33",
+      "timestamp": "11:25:52 PM",
+      "actor": "host",
+      "action": "START_ROUND",
+      "target": "ROUND_1",
+      "details": "Initiating Round 1 with a 5s countdown"
+    },
+    {
+      "id": "audit-1788630865167-9dta",
+      "timestamp": "11:24:25 PM",
+      "actor": "host",
+      "action": "MARK_READY",
+      "target": "CONTEST",
+      "details": "Contest marked as ready to start."
+    },
+    {
+      "id": "audit-1788630809488-r4ds",
+      "timestamp": "11:23:29 PM",
+      "actor": "host",
+      "action": "RESET_CONTEST",
+      "target": "COMPETITION",
+      "details": "Reset contest and all stations to clean state."
+    },
+    {
+      "id": "audit-1788630345329-bnxd",
+      "timestamp": "11:15:45 PM",
+      "actor": "contact@example.com",
+      "action": "VIOLATION_TRIGGERED",
+      "target": "PC-02",
+      "details": "RESTART_ATTEMPT: Manual Host Disqualification"
+    },
+    {
+      "id": "audit-1788630345329-yl70",
+      "timestamp": "11:15:45 PM",
+      "actor": "host",
+      "action": "DISQUALIFY_STATION",
+      "target": "PC-02",
+      "details": "Manual Host Disqualification"
+    },
+    {
+      "id": "audit-1788630242779-d1xo",
+      "timestamp": "11:14:02 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_COMPLETE",
+      "target": "ROUND_2",
+      "details": "Round 2 timer reached zero."
+    },
+    {
+      "id": "audit-1788630061293-viny",
+      "timestamp": "11:11:01 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_BEGIN",
+      "target": "ROUND_2",
+      "details": "Round 2 typing phase started (180s)"
+    },
+    {
+      "id": "audit-1788630056263-3pbq",
+      "timestamp": "11:10:56 PM",
+      "actor": "host",
+      "action": "START_ROUND",
+      "target": "ROUND_2",
+      "details": "Initiating Round 2 with a 5s countdown"
+    },
+    {
+      "id": "audit-1788630021890-cwqi",
+      "timestamp": "11:10:21 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_COMPLETE",
+      "target": "ROUND_1",
+      "details": "Round 1 timer reached zero."
+    },
+    {
+      "id": "audit-1788629961389-fm49",
+      "timestamp": "11:09:21 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_BEGIN",
+      "target": "ROUND_1",
+      "details": "Round 1 typing phase started (60s)"
+    },
+    {
+      "id": "audit-1788629956338-61g2",
+      "timestamp": "11:09:16 PM",
+      "actor": "host",
+      "action": "START_ROUND",
+      "target": "ROUND_1",
+      "details": "Initiating Round 1 with a 5s countdown"
+    },
+    {
+      "id": "audit-1788629821393-nnv9",
+      "timestamp": "11:07:01 PM",
+      "actor": "host",
+      "action": "MARK_READY",
+      "target": "CONTEST",
+      "details": "Contest marked as ready to start."
+    },
+    {
+      "id": "audit-1788629664937-h8yw",
+      "timestamp": "11:04:24 PM",
+      "actor": "host",
+      "action": "RESET_CONTEST",
+      "target": "COMPETITION",
+      "details": "Reset contest and all stations to clean state."
+    },
+    {
+      "id": "audit-1788629623365-owvl",
+      "timestamp": "11:03:43 PM",
+      "actor": "contact@example.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-01",
+      "details": "Submitted Round 2: 450 WPM, 3.2% Accuracy, Score 1440"
+    },
+    {
+      "id": "audit-1788629572883-8t22",
+      "timestamp": "11:02:52 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_BEGIN",
+      "target": "ROUND_2",
+      "details": "Round 2 typing phase started (180s)"
+    },
+    {
+      "id": "audit-1788629567843-sjax",
+      "timestamp": "11:02:47 PM",
+      "actor": "host",
+      "action": "START_ROUND",
+      "target": "ROUND_2",
+      "details": "Initiating Round 2 with a 5s countdown"
+    },
+    {
+      "id": "audit-1788629539606-vvm4",
+      "timestamp": "11:02:19 PM",
+      "actor": "host",
+      "action": "RESET_STATION_ATTEMPT",
+      "target": "PC-01",
+      "details": "Reset station attempt for contact@example.com"
+    },
+    {
+      "id": "audit-1788629537691-717b",
+      "timestamp": "11:02:17 PM",
+      "actor": "host",
+      "action": "RESET_STATION_ATTEMPT",
+      "target": "PC-02",
+      "details": "Reset station attempt for admin@example.com"
+    },
+    {
+      "id": "audit-1788629503260-u49g",
+      "timestamp": "11:01:43 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_COMPLETE",
+      "target": "ROUND_1",
+      "details": "Round 1 timer reached zero."
+    },
+    {
+      "id": "audit-1788629449604-kdv0",
+      "timestamp": "11:00:49 PM",
+      "actor": "host",
+      "action": "RESET_STATION_ATTEMPT",
+      "target": "PC-02",
+      "details": "Reset station attempt for admin@example.com"
+    },
+    {
+      "id": "audit-1788629442801-rfyr",
+      "timestamp": "11:00:42 PM",
+      "actor": "host",
+      "action": "RESTART_ROUND",
+      "target": "ROUND_1",
+      "details": "Restarted Round 1 with new passage \"Algorithms in Motion\""
+    },
+    {
+      "id": "audit-1788629416481-wfch",
+      "timestamp": "11:00:16 PM",
+      "actor": "host",
+      "action": "CALCULATE_QUALIFIERS",
+      "target": "TOP_2",
+      "details": "Selected 1 qualifiers for Round 2."
+    },
+    {
+      "id": "audit-1788629081598-9ffo",
+      "timestamp": "10:54:41 PM",
+      "actor": "SYSTEM",
+      "action": "CRASH_RECOVERY",
+      "target": "CONTEST",
+      "details": "Server restored from snapshot. Status: ROUND_1_COMPLETE"
+    },
+    {
+      "id": "audit-1788628677822-r8tl",
+      "timestamp": "10:47:57 PM",
+      "actor": "SYSTEM",
+      "action": "CRASH_RECOVERY",
+      "target": "CONTEST",
+      "details": "Server restored from snapshot. Status: ROUND_1_COMPLETE"
+    },
+    {
+      "id": "audit-1788628617143-ptdp",
+      "timestamp": "10:46:57 PM",
+      "actor": "SYSTEM",
+      "action": "CRASH_RECOVERY",
+      "target": "CONTEST",
+      "details": "Server restored from snapshot. Status: ROUND_1_COMPLETE"
+    },
+    {
+      "id": "audit-1788627655606-io8d",
+      "timestamp": "10:30:55 PM",
+      "actor": "SYSTEM",
+      "action": "CRASH_RECOVERY",
+      "target": "CONTEST",
+      "details": "Server restored from snapshot. Status: ROUND_1_COMPLETE"
+    },
+    {
+      "id": "audit-1788627620023-zxn1",
+      "timestamp": "10:30:20 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_COMPLETE",
+      "target": "ROUND_1",
+      "details": "Round 1 timer reached zero."
+    },
+    {
+      "id": "audit-1788627559601-fo9u",
+      "timestamp": "10:29:19 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_BEGIN",
+      "target": "ROUND_1",
+      "details": "Round 1 typing phase started (60s)"
+    },
+    {
+      "id": "audit-1788627554591-qvw2",
+      "timestamp": "10:29:14 PM",
+      "actor": "host",
+      "action": "START_ROUND",
+      "target": "ROUND_1",
+      "details": "Initiating Round 1 with a 5s countdown"
+    },
+    {
+      "id": "audit-1788627500340-a1js",
+      "timestamp": "10:28:20 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_BEGIN",
+      "target": "ROUND_1",
+      "details": "Round 1 typing phase started (60s)"
+    },
+    {
+      "id": "audit-1788627495315-qs0q",
+      "timestamp": "10:28:15 PM",
+      "actor": "host",
+      "action": "START_ROUND",
+      "target": "ROUND_1",
+      "details": "Initiating Round 1 with a 5s countdown"
+    },
+    {
+      "id": "audit-1788627491739-a0wa",
+      "timestamp": "10:28:11 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_BEGIN",
+      "target": "ROUND_2",
+      "details": "Round 2 typing phase started (180s)"
+    },
+    {
+      "id": "audit-1788627486700-6bz3",
+      "timestamp": "10:28:06 PM",
+      "actor": "host",
+      "action": "START_ROUND",
+      "target": "ROUND_2",
+      "details": "Initiating Round 2 with a 5s countdown"
+    },
+    {
+      "id": "audit-1788626959385-xcem",
+      "timestamp": "10:19:19 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_COMPLETE",
+      "target": "ROUND_1",
+      "details": "Round 1 timer reached zero."
+    },
+    {
+      "id": "audit-1788626911043-usyd",
+      "timestamp": "10:18:31 PM",
+      "actor": "contact@example.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-01",
+      "details": "Submitted Round 1: 338 WPM, 2.8% Accuracy, Score 946"
+    },
+    {
+      "id": "audit-1788626898917-9h0l",
+      "timestamp": "10:18:18 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_BEGIN",
+      "target": "ROUND_1",
+      "details": "Round 1 typing phase started (60s)"
+    },
+    {
+      "id": "audit-1788626893873-ftcl",
+      "timestamp": "10:18:13 PM",
+      "actor": "host",
+      "action": "START_ROUND",
+      "target": "ROUND_1",
+      "details": "Initiating Round 1 with a 5s countdown"
+    },
+    {
+      "id": "audit-1788626796035-1ljx",
+      "timestamp": "10:16:36 PM",
+      "actor": "host",
+      "action": "RESET_STATION_ATTEMPT",
+      "target": "PC-01",
+      "details": "Reset station attempt for contact@example.com"
+    },
+    {
+      "id": "audit-1788626701694-a6aj",
+      "timestamp": "10:15:01 PM",
+      "actor": "SYSTEM",
+      "action": "CRASH_RECOVERY",
+      "target": "CONTEST",
+      "details": "Server restored from snapshot. Status: ROUND_2_COMPLETE"
+    },
+    {
+      "id": "audit-1788626250908-raf2",
+      "timestamp": "10:07:30 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_COMPLETE",
+      "target": "ROUND_2",
+      "details": "Round 2 timer reached zero."
+    },
+    {
+      "id": "audit-1788626069399-1myb",
+      "timestamp": "10:04:29 PM",
+      "actor": "host",
+      "action": "START_ROUND",
+      "target": "ROUND_2",
+      "details": "Started Round 2 (180s) with passage \"Low Latency Networking & High Concurrency\""
+    },
+    {
+      "id": "audit-1788625814881-6wo4",
+      "timestamp": "10:00:14 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_COMPLETE",
+      "target": "ROUND_1",
+      "details": "Round 1 timer reached zero."
+    },
+    {
+      "id": "audit-1788625754412-6xt1",
+      "timestamp": "9:59:14 PM",
+      "actor": "host",
+      "action": "RESTART_ROUND",
+      "target": "ROUND_1",
+      "details": "Restarted Round 1 with new passage \"The Essence of Systems\""
+    },
+    {
+      "id": "audit-1788625742309-fp11",
+      "timestamp": "9:59:02 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_COMPLETE",
+      "target": "ROUND_1",
+      "details": "Round 1 timer reached zero."
+    },
+    {
+      "id": "audit-1788625723020-lco1",
+      "timestamp": "9:58:43 PM",
+      "actor": "admin@example.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-02",
+      "details": "Submitted Round 1: 182 WPM, 2.4% Accuracy, Score 437"
+    },
+    {
+      "id": "audit-1788625698131-giv3",
+      "timestamp": "9:58:18 PM",
+      "actor": "host",
+      "action": "RESET_STATION_ATTEMPT",
+      "target": "PC-02",
+      "details": "Reset station attempt for admin@example.com"
+    },
+    {
+      "id": "audit-1788625681923-nmyv",
+      "timestamp": "9:58:01 PM",
+      "actor": "host",
+      "action": "RESTART_ROUND",
+      "target": "ROUND_1",
+      "details": "Restarted Round 1 with new passage \"The Essence of Systems\""
+    },
+    {
+      "id": "audit-1788625404755-xvyp",
+      "timestamp": "9:53:24 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_COMPLETE",
+      "target": "ROUND_1",
+      "details": "Round 1 timer reached zero."
+    },
+    {
+      "id": "audit-1788625357019-7sqg",
+      "timestamp": "9:52:37 PM",
+      "actor": "contact@example.com",
+      "action": "VIOLATION_TRIGGERED",
+      "target": "PC-01",
+      "details": "TAB_SWITCH: Participant switched tab or minimized window"
+    },
+    {
+      "id": "audit-1788625356708-ttvb",
+      "timestamp": "9:52:36 PM",
+      "actor": "SYSTEM",
+      "action": "AUTO_DISQUALIFY",
+      "target": "PC-01",
+      "details": "Station disqualified due to WINDOW_BLUR security violation."
+    },
+    {
+      "id": "audit-1788625356708-r8s1",
+      "timestamp": "9:52:36 PM",
+      "actor": "contact@example.com",
+      "action": "VIOLATION_TRIGGERED",
+      "target": "PC-01",
+      "details": "WINDOW_BLUR: Participant unfocused typing window"
+    },
+    {
+      "id": "audit-1788625346778-9l4z",
+      "timestamp": "9:52:26 PM",
+      "actor": "admin@example.com",
+      "action": "VIOLATION_TRIGGERED",
+      "target": "PC-02",
+      "details": "TAB_SWITCH: Participant switched tab or minimized window"
+    },
+    {
+      "id": "audit-1788625346436-q1sz",
+      "timestamp": "9:52:26 PM",
+      "actor": "SYSTEM",
+      "action": "AUTO_DISQUALIFY",
+      "target": "PC-02",
+      "details": "Station disqualified due to WINDOW_BLUR security violation."
+    },
+    {
+      "id": "audit-1788625346436-hgyv",
+      "timestamp": "9:52:26 PM",
+      "actor": "admin@example.com",
+      "action": "VIOLATION_TRIGGERED",
+      "target": "PC-02",
+      "details": "WINDOW_BLUR: Participant unfocused typing window"
+    },
+    {
+      "id": "audit-1788625344359-fspk",
+      "timestamp": "9:52:24 PM",
+      "actor": "host",
+      "action": "RESTART_ROUND",
+      "target": "ROUND_1",
+      "details": "Restarted Round 1 with new passage \"Algorithms in Motion\""
+    },
+    {
+      "id": "audit-1788625162477-qrbu",
+      "timestamp": "9:49:22 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_COMPLETE",
+      "target": "ROUND_1",
+      "details": "Round 1 timer reached zero."
+    },
+    {
+      "id": "audit-1788625102207-umnf",
+      "timestamp": "9:48:22 PM",
+      "actor": "host",
+      "action": "START_ROUND",
+      "target": "ROUND_1",
+      "details": "Started Round 1 (60s) with passage \"Algorithms in Motion\""
+    },
+    {
+      "id": "audit-1788625094008-v0hb",
+      "timestamp": "9:48:14 PM",
+      "actor": "host",
+      "action": "TOGGLE_LOCK",
+      "target": "CONTEST",
+      "details": "Contest configuration LOCKED"
+    },
+    {
+      "id": "audit-1788625042474-96wv",
+      "timestamp": "9:47:22 PM",
+      "actor": "host",
+      "action": "MARK_READY",
+      "target": "CONTEST",
+      "details": "Contest marked as ready to start."
+    },
+    {
+      "id": "audit-1788624402065-166i",
+      "timestamp": "9:36:42 PM",
+      "actor": "host",
+      "action": "RESET_CONTEST",
+      "target": "COMPETITION",
+      "details": "Reset contest and all stations to clean state."
+    },
+    {
+      "id": "audit-1788624380135-825o",
+      "timestamp": "9:36:20 PM",
+      "actor": "host",
+      "action": "START_ROUND",
+      "target": "ROUND_1",
+      "details": "Started Round 1 (60s) with passage \"Algorithms in Motion\""
+    },
+    {
+      "id": "audit-1788624378051-x5ev",
+      "timestamp": "9:36:18 PM",
+      "actor": "host",
+      "action": "RESTART_ROUND",
+      "target": "ROUND_1",
+      "details": "Restarted Round 1 with new passage \"Algorithms in Motion\""
+    },
+    {
+      "id": "audit-1788624366505-hp6g",
+      "timestamp": "9:36:06 PM",
+      "actor": "SYSTEM",
+      "action": "ROUND_COMPLETE",
+      "target": "ROUND_1",
+      "details": "Round 1 timer reached zero."
+    },
+    {
+      "id": "audit-1788624306036-hzzc",
+      "timestamp": "9:35:06 PM",
+      "actor": "host",
+      "action": "START_ROUND",
+      "target": "ROUND_1",
+      "details": "Started Round 1 (60s) with passage \"The Essence of Systems\""
+    },
+    {
+      "id": "audit-1788624162188-ghng",
+      "timestamp": "9:32:42 PM",
+      "actor": "host",
+      "action": "MARK_READY",
+      "target": "CONTEST",
+      "details": "Contest marked as ready to start."
+    },
+    {
+      "id": "audit-1788623619305-t9wt",
+      "timestamp": "9:23:39 PM",
+      "actor": "SYSTEM",
+      "action": "CRASH_RECOVERY",
+      "target": "CONTEST",
+      "details": "Server restored from snapshot. Status: READY"
+    },
+    {
+      "id": "audit-1788623520965-7jvd",
+      "timestamp": "9:22:00 PM",
+      "actor": "SYSTEM",
+      "action": "CRASH_RECOVERY",
+      "target": "CONTEST",
+      "details": "Server restored from snapshot. Status: READY"
+    },
+    {
+      "id": "audit-1788623496801-ag1d",
+      "timestamp": "9:21:36 PM",
+      "actor": "SYSTEM",
+      "action": "CRASH_RECOVERY",
+      "target": "CONTEST",
+      "details": "Server restored from snapshot. Status: READY"
+    },
+    {
+      "id": "audit-1788623485805-8iqj",
+      "timestamp": "9:21:25 PM",
+      "actor": "SYSTEM",
+      "action": "CRASH_RECOVERY",
+      "target": "CONTEST",
+      "details": "Server restored from snapshot. Status: READY"
+    },
+    {
+      "id": "audit-1788623475592-oiaz",
+      "timestamp": "9:21:15 PM",
+      "actor": "SYSTEM",
+      "action": "CRASH_RECOVERY",
+      "target": "CONTEST",
+      "details": "Server restored from snapshot. Status: READY"
+    },
+    {
+      "id": "audit-1788622173900-oa0k",
+      "timestamp": "8:59:33 PM",
+      "actor": "SYSTEM",
+      "action": "CRASH_RECOVERY",
+      "target": "CONTEST",
+      "details": "Server restored from snapshot. Status: READY"
+    }
+  ],
+  "room": {
+    "roomPin": "592905",
+    "competitionName": "Blitzkrieg - College LAN Championship",
+    "whitelistedEmails": [
+      "admin@example.com",
+      "support@example.com",
+      "info@example.com",
+      "hello@example.com",
+      "contact@example.com",
+      "noreply@example.com",
+      "dev@example.com",
+      "test@example.com",
+      "user@example.com",
+      "team@example.com"
+    ],
+    "joinedParticipants": [
+      {
+        "email": "noreply@example.com",
+        "stationCode": "PC-01",
+        "joinedAt": "2026-09-05T17:54:47.586Z"
+      },
+      {
+        "email": "hello@example.com",
+        "stationCode": "PC-02",
+        "joinedAt": "2026-09-05T17:55:06.974Z"
+      },
+      {
+        "email": "contact@example.com",
+        "stationCode": "PC-03",
+        "joinedAt": "2026-09-05T17:55:38.557Z"
+      }
+    ],
+    "isOpen": true
+  }
+}
