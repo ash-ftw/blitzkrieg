@@ -4,14 +4,17 @@ export interface AuthUser {
   id: string;
   username: string;
   role: Role;
-  participantCode: string | null;
+  email: string | null;
   stationCode: string | null;
 }
 
 export interface LoginRequest {
-  username: string;
-  password: string;
-  stationCode?: string;
+  // Host login: username + password
+  username?: string;
+  password?: string;
+  // Participant login: email + roomPin
+  email?: string;
+  roomPin?: string;
 }
 
 export interface LoginResponse {
@@ -22,10 +25,13 @@ export interface LoginResponse {
 
 export type ContestStatus =
   | "DRAFT"
+  | "SETUP"
   | "READY"
+  | "STARTING_ROUND_1"
   | "ROUND_1"
   | "ROUND_1_COMPLETE"
   | "QUALIFICATION"
+  | "STARTING_ROUND_2"
   | "ROUND_2"
   | "ROUND_2_COMPLETE"
   | "FINALIZED";
@@ -56,7 +62,7 @@ export type ViolationType =
 
 export interface StationSnapshot {
   stationCode: string;
-  participantCode: string | null;
+  email: string | null;
   status: StationStatus;
   wpm: number | null;
   accuracy: number | null;
@@ -80,7 +86,7 @@ export interface AttemptSubmissionRequest {
 }
 
 export interface AttemptResult {
-  participantCode: string;
+  email: string;
   stationCode: string;
   round: 1 | 2;
   wpm: number;
@@ -92,7 +98,7 @@ export interface AttemptResult {
 
 export interface IncidentReport {
   id: string;
-  participantCode: string;
+  email: string;
   stationCode: string;
   type: ViolationType;
   timestamp: string;
@@ -113,6 +119,24 @@ export interface QualificationSummary {
   qualifiers: string[];
 }
 
+// ─── Room types ─────────────────────────────────────────────────────
+
+export interface JoinedParticipant {
+  email: string;
+  stationCode: string;
+  joinedAt: string;
+}
+
+export interface RoomSnapshot {
+  roomPin: string;
+  competitionName: string;
+  totalInvited: number;
+  joinedParticipants: JoinedParticipant[];
+  isOpen: boolean;
+}
+
+// ─── Contest snapshot ───────────────────────────────────────────────
+
 export interface ContestSnapshot {
   name: string;
   status: ContestStatus;
@@ -132,6 +156,5 @@ export interface ContestSnapshot {
   stations: StationSnapshot[];
   incidents: IncidentReport[];
   auditLogs: AuditLogEntry[];
+  room: RoomSnapshot | null;
 }
-
-

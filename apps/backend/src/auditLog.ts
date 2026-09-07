@@ -23,3 +23,14 @@ export function addAuditLog(actor: string, action: string, target?: string, deta
 export function getAuditLogs(): AuditLogEntry[] {
   return [...logs];
 }
+
+/** Return the raw logs array for persistence snapshotting. */
+export function getLogsRaw(): AuditLogEntry[] {
+  return logs;
+}
+
+/** Replace logs from a persisted snapshot. */
+export function restoreLogs(entries: AuditLogEntry[]) {
+  logs.length = 0;
+  logs.push(...entries);
+}

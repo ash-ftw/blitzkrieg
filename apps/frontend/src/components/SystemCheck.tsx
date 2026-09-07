@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 interface SystemCheckProps {
   stationCode: string;
-  participantCode: string;
+  email: string;
   onPassed: () => void;
 }
 
@@ -13,7 +13,7 @@ interface CheckItem {
   details?: string;
 }
 
-export function SystemCheck({ stationCode, participantCode, onPassed }: SystemCheckProps) {
+export function SystemCheck({ stationCode, email, onPassed }: SystemCheckProps) {
   const [checks, setChecks] = useState<CheckItem[]>([
     { id: "server", label: "Server Connection", status: "pending" },
     { id: "websocket", label: "WebSocket Connection", status: "pending" },
@@ -67,7 +67,7 @@ export function SystemCheck({ stationCode, participantCode, onPassed }: SystemCh
       updateCheck(updated, "station", stationCode ? "pass" : "fail", `Assigned to ${stationCode}`);
 
       // Auth Check
-      updateCheck(updated, "auth", participantCode ? "pass" : "fail", `Logged in as ${participantCode}`);
+      updateCheck(updated, "auth", email ? "pass" : "fail", `Logged in as ${email}`);
 
       // Contest & Clock Check
       updateCheck(updated, "contest", "pass");
@@ -99,7 +99,7 @@ export function SystemCheck({ stationCode, participantCode, onPassed }: SystemCh
       <div className="check-header">
         <span className="eyebrow">PRE-EVENT DIAGNOSTIC</span>
         <h2>BLITZKRIEG SYSTEM CHECK</h2>
-        <p className="hint">Station {stationCode} • Participant {participantCode}</p>
+        <p className="hint">Station {stationCode} • Participant {email}</p>
       </div>
 
       <div className="check-grid">

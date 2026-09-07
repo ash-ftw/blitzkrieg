@@ -16,7 +16,49 @@ export function TypingEngine({ passage, token, remainingSeconds, durationSeconds
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [localSeconds, setLocalSeconds] = useState(remainingSeconds);
   const [violationAlert, setViolationAlert] = useState<string | null>(null);
+  const [capsLockOn, setCapsLockOn] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const typedTextRef = useRef(typedText);
+  const startTimeRef = useRef(startTime);
+  const isSubmittedRef = useRef(isSubmitted);
+  const isSubmittingRef = useRef(isSubmitting);
+
+  useEffect(() => {
+    typedTextRef.current = typedText;
+  }, [typedText]);
+
+  useEffect(() => {
+    startTimeRef.current = startTime;
+  }, [startTime]);
+
+  useEffect(() => {
+    isSubmittedRef.current = isSubmitted;
+  }, [isSubmitted]);
+
+  useEffect(() => {
+    isSubmittingRef.current = isSubmitting;
+  }, [isSubmitting]);
+
+  // Guaranteed submission on unmount (when timer ends and backend unmounts this component)
+  useEffect(() => {
+    return () => {
+      if (!isSubmittedRef.current && !isSubmittingRef.current && typedTextRef.current.length > 0) {
+        const elapsedMs = startTimeRef.current ? Date.now() - startTimeRef.current : durationSeconds * 1000;
+        fetch("/api/contest/submit", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            typedText: typedTextRef.current,
+            durationMs: elapsedMs
+          }),
+          keepalive: true
+        }).catch(() => undefined);
+      }
+    };
+  }, [token, durationSeconds]);
 
   const targetText = passage.content;
 
@@ -65,6 +107,8 @@ export function TypingEngine({ passage, token, remainingSeconds, durationSeconds
   }
 
   // Anti-cheat window blur & visibility detection
+  // Disabled temporarily per host request
+  /*
   useEffect(() => {
     function handleVisibilityChange() {
       if (document.hidden) {
@@ -84,6 +128,7 @@ export function TypingEngine({ passage, token, remainingSeconds, durationSeconds
       window.removeEventListener("blur", handleBlur);
     };
   }, [token]);
+  */
 
   async function submitAttempt() {
     if (isSubmitting || isSubmitted) return;
@@ -174,7 +219,14 @@ export function TypingEngine({ passage, token, remainingSeconds, durationSeconds
       <div className="passage-header">
         <div>
           <span className="eyebrow">{passage.difficulty} PASSAGE</span>
-          <h2>{passage.title}</h2>
+          <h2>
+            {passage.title}
+            {capsLockOn ? (
+              <span style={{ marginLeft: "1rem", fontSize: "0.85rem", color: "var(--warning)", background: "rgba(245, 158, 11, 0.2)", padding: "0.2rem 0.5rem", borderRadius: "4px", verticalAlign: "middle" }}>
+                ⚠️ Caps Lock ON
+              </span>
+            ) : null}
+          </h2>
         </div>
         <div className="live-metrics">
           <div className="stat">
@@ -231,6 +283,8 @@ export function TypingEngine({ passage, token, remainingSeconds, durationSeconds
         className="hidden-typing-input"
         value={typedText}
         onChange={(e) => handleInputChange(e.target.value)}
+        onKeyDown={(e) => setCapsLockOn(e.getModifierState("CapsLock"))}
+        onKeyUp={(e) => setCapsLockOn(e.getModifierState("CapsLock"))}
         onCopy={(e) => handleClipboardAction("COPY", "Copy shortcut attempted", e)}
         onPaste={(e) => handleClipboardAction("PASTE", "Paste shortcut attempted", e)}
         onCut={(e) => handleClipboardAction("PASTE", "Cut shortcut attempted", e)}

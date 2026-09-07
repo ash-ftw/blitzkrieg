@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-09-05T17:30:16.478Z",
+  "competitionName": "Blitzkrieg - College LAN Championship",
+  "qualifiers": [
+    {
+      "email": "contact@example.com",
+      "score": 946,
+      "wpm": 338,
+      "accuracy": 2.8
+    }
+  ]
+}
