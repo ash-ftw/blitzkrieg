@@ -1,902 +1,1818 @@
 {
-  "savedAt": "2026-09-05T18:28:32.665Z",
+  "savedAt": "2026-09-11T08:15:02.624Z",
   "contest": {
-    "name": "Blitzkrieg - College LAN Championship",
-    "status": "FINALIZED",
+    "name": "Championship 2026",
+    "status": "ROUND_2_COMPLETE",
     "round": 2,
     "durationSeconds": 180,
     "remainingSeconds": 0,
     "isLocked": false,
-    "qualifierCount": 2,
+    "qualifierCount": 10,
     "qualifiers": [
-      "contact@example.com",
-      "hello@example.com"
+      "ashajumone@gmail.com",
+      "hannamaria897@gmail.com",
+      "adwaiths183@gmail.com",
+      "vedavyasps7@gmail.com",
+      "uzumakionesir@gmail.com",
+      "jjthekkepalackal@gmail.com",
+      "bibiiiiiii67@gmail.com",
+      "annannajose591@gmail.com",
+      "epabhinand6@gmail.com",
+      "arunjoy300@gmail.com"
     ],
     "activePassage": {
       "id": "passage-r2-01",
-      "title": "Low Latency Networking & High Concurrency",
-      "content": "In modern distributed network architectures, maintaining microsecond-level latency requires zero-copy buffer allocations, event-driven non-blocking socket handling, and optimized lock-free concurrency primitives. As node density scales across high-speed campus backbones, deterministic packet processing and memory locality dictate peak system throughput and operational stability under heavy burst workloads.",
+      "title": "Microsecond Systems: SIMD Vectorization, Cache Coherency, and Kernel Bypass",
+      "content": "In ultra-low-latency financial electronic trading and telecommunication kernels, microsecond determinism is achieved by systematically eliminating kernel context switches, thread scheduling jitter, and dynamic memory allocations. At sub-microsecond timescales, the overhead of standard Linux socket APIs—specifically the socket(), bind(), listen(), and epoll_wait() system call pipeline—introduces catastrophic latency variance driven by kernel page-fault handlers, interrupt requests, and cache pollution. To circumvent these structural bottlenecks, high-performance systems deploy kernel-bypass network architectures utilizing user-space drivers such as the Data Plane Development Kit (DPDK), Solarflare OpenOnload, and Remote Direct Memory Access (RDMA) over Converged Ethernet (RoCE v2). By binding physical network interface card (NIC) PCI queues directly to dedicated user-space execution threads pinned via pthread_setaffinity_np() to isolated CPU cores (configured with isolcpus and nohz_full kernel parameters), the application reads packet descriptor rings directly from PCIe memory through non-blocking busy-poll loops. This architecture completely bypasses the kernel TCP/IP network stack, the netfilter packet filter subsystem, and softirq bottom-half interrupt processing routines, slashing one-way wire-to-wire packet processing latency from twelve microseconds down to less than eight hundred nanoseconds. At the instruction level, computational throughput is maximized using Intel x86_64 Advanced Vector Extensions (AVX-512) and ARM NEON Single Instruction Multiple Data (SIMD) vector register intrinsics. By loading eight 64-bit floating-point numbers or sixteen 32-bit integers into 512-bit ZMM registers simultaneously, vector pipelines compute mathematical transformations, order book matching heuristics, and cryptographic checksums in parallel within a single clock cycle. However, harnessing vector pipelines demands meticulous attention to CPU thermal throttling, frequency transitions, and strict 64-byte memory boundary alignments via posix_memalign() or C++17 alignas(64) qualifiers. Misaligned memory access across cache line boundaries forces the processor to execute dual split-line loads, precipitating internal micro-architectural stalls and flushing reservation stations. Furthermore, multi-core low-latency systems must master cache coherency protocols governed by the MESI (Modified, Exclusive, Shared, Invalid) state machine. When two threads running on different physical cores write to distinct variables situated on the exact same 64-byte cache line, hardware bus controllers continuously invalidate cache lines across both core caches in a destructive phenomenon known as false sharing. False sharing degrades cache access speeds from 1.2 nanoseconds (Level-1 cache hit) to over 70 nanoseconds (inter-socket QPI/UPI interconnect traversal). To prevent false sharing, critical data structures employ explicit cache-line padding and compile-time alignment directives. Lock-free single-producer single-consumer (SPSC) ring buffers utilize acquire-release memory fences (__atomic_store_n and __atomic_load_n with __ATOMIC_RELEASE and __ATOMIC_ACQUIRE) to coordinate inter-thread messaging without executing heavy full-memory barriers (mfence) or invoking operating system synchronization primitives like pthread_mutex_lock(). Memory allocation during active trading sessions is strictly forbidden; all working buffers, order books, and circular queues are statically pre-allocated in huge pages (2MB or 1GB pages configured via hugetlbfs) during process bootstrap, completely eliminating runtime translation lookaside buffer (TLB) misses and malloc/free lock contention. Hardware branch predictors, utilizing advanced perceptron-based algorithms, evaluate conditional branch outcomes speculatively; developers optimize branch prediction accuracy using compiler builtins like __builtin_expect() and cold/hot attribute annotations. Every clock cycle, every cache line, and every memory fence is meticulously audited to forge software architectures that perform with flawless mathematical determinism under the most violent market bursts imaginable. Beyond CPU microarchitecture, high-speed physical network interface cards rely on custom FPGA hardware coprocessors communicating over low-latency PCIe Gen-5 interconnects. Field Programmable Gate Arrays execute real-time parsing of FIX (Financial Information eXchange) protocol streams and binary market data feeds directly within silicon gates, calculating algorithmic trading signals before network frames fully traverse the host operating system PCIe bus. When packets arrive at the physical Ethernet PHY transceiver, SerDes (Serializer/Deserializer) circuits deserialize 100-gigabit optical waveforms into raw 64b/66b encoded bitstreams with deterministic sub-nanosecond jitter. Direct memory access engines stream incoming ethernet frame payloads directly into host RAM buffers negotiated through zero-copy circular descriptor rings. Within host memory, custom packet parsers avoid standard memcpy operations by projecting strongly-typed binary struct overlays directly onto the raw packet buffer bytes using reinterpret_cast with strict unaligned-access safeguards. Thread execution loops are compiled with -O3, -fno-rtti, -fno-exceptions, and -march=native flags to strip runtime metadata overhead, ensuring that emitted assembly code consists entirely of tightly bundled machine instructions optimized for the target processor execution ports. Loop bodies are manually unrolled or vectorized using OpenMP SIMD pragmas, transforming recursive scalar operations into parallel AVX-512 FMA (Fused Multiply-Add) vector instructions executing across five execution units simultaneously. To prevent Linux kernel page reclaimers from stealing physical memory pages or swapping dirty buffers to disk, latency-critical processes invoke mlockall(MCL_CURRENT | MCL_FUTURE) upon initial startup. Furthermore, system administrators isolate CPU interrupt vectors away from application cores using smp_affinity masks, delegating disk I/O, timer ticks, and kernel housekeeping routines to separate management cores. High-resolution timestamps are obtained directly from hardware using the x86 rdtsc and rdtscp instructions, which query processor invariant cycle counters with an overhead of less than twenty nanoseconds per invocation. By correlating hardware cycle timestamps across multiple clock domains, distributed telemetry agents reconstruct microburst queueing delays across distributed network switches with nanosecond resolution. The pursuit of microsecond determinism transforms software engineering into an empirical branch of applied physics, where the physical speed of light through fiber-optic glass (approximately five nanoseconds per meter) and the capacitive gate-delay of silicon transistors dictate the outer boundaries of attainable computational performance. In ultra-high-frequency environments, even the physical length of twinaxial copper cables between server racks is calculated down to centimeters to maintain clock synchronization parity. Memory controllers implement closed-page row buffer management policies to eliminate row-activation latency penalties during non-sequential DRAM access bursts. System architects analyze CPU performance monitoring counters (PMCs) via Linux perf and Intel VTune, identifying micro-architectural bad speculation, front-end instruction fetch starvation, and backend execution port pressure. Branch targets are aligned to 32-byte boundaries to maximize decoding efficiency across the legacy decode pipeline and the decoded Icache (DSB). When inter-process communication is required between co-located trading engines and risk-compliance gateways, shared-memory queues built upon memory-mapped tmpfs files allow messages to traverse process boundaries in fewer than fifteen nanoseconds without invoking kernel traps. Every algorithmic decision, every bitwise mask, and every atomic synchronization barrier is sculpted with surgical precision to ensure zero-jitter execution, guaranteeing that the trading platform executes market orders with unrivaled, deterministic velocity. Packet pacing controllers govern outbound link utilization to evade downstream switch egress buffer overflows that provoke destructive TCP tail-drop and retransmission timeouts. Hardware-assisted timestamping engines embedded inside physical network PHY chips stamp egress and ingress ethernet preambles at the sub-nanosecond layer, feeding distributed Precision Time Protocol (IEEE 1588 PTP) boundary clocks. Atomic compare-and-swap retry loops incorporate exponential backoff with CPU pause instructions (the _mm_pause() intrinsic) to prevent memory bus saturation and excessive power consumption during high spinlock contention. By orchestrating every facet of the compute infrastructure—from optical transceivers and PCIe roots to cache lines and CPU registers—ultra-low-latency architectures achieve unprecedented performance benchmarks that remain entirely unreachable through conventional software development paradigms.",
       "round": 2,
       "difficulty": "HARD",
-      "wordCount": 50,
-      "characterCount": 410
+      "wordCount": 1122,
+      "characterCount": 9143
     },
-    "roundStartedAt": 1788632666591
+    "roundStartedAt": 1789113818332
   },
   "stations": [
     {
       "stationCode": "PC-01",
       "hostname": "LAB-PC-01",
-      "status": "DISQUALIFIED",
-      "email": "noreply@example.com",
-      "activeSession": "bce34949-5730-4e07-b408-c90fabce5913",
-      "lastHeartbeatAt": "2026-09-05T18:28:27.744Z",
-      "wpm": 15,
-      "accuracy": 39.1,
-      "score": 587
+      "status": "SUBMITTED",
+      "email": "jjthekkepalackal@gmail.com",
+      "name": "Jinson Jose",
+      "activeSession": "4013e019-8b78-4077-b5db-5c0af41dce77",
+      "lastHeartbeatAt": "2026-09-11T08:08:35.622Z",
+      "wpm": 19,
+      "accuracy": 99.4,
+      "score": 1889
     },
     {
       "stationCode": "PC-02",
       "hostname": "LAB-PC-02",
       "status": "SUBMITTED",
-      "email": "hello@example.com",
-      "activeSession": "c8736e0a-1bb6-42a0-8ac8-60bbb6bf436a",
-      "lastHeartbeatAt": "2026-09-05T18:28:28.039Z",
-      "wpm": 42,
-      "accuracy": 62.3,
-      "score": 2617
+      "email": "ashajumone@gmail.com",
+      "name": "Albin Shajumone",
+      "activeSession": "cf0e484b-a831-456e-aea4-01d2b43b39d2",
+      "lastHeartbeatAt": "2026-09-11T08:08:26.319Z",
+      "wpm": 11,
+      "accuracy": 99.5,
+      "score": 1095
     },
     {
       "stationCode": "PC-03",
       "hostname": "LAB-PC-03",
+      "status": "DISQUALIFIED",
+      "email": "sree192006@gmail.com",
+      "name": "sreedev sreejeh",
+      "activeSession": "ffe190e3-84b5-4cbd-8d81-70e9a5cf94b3",
+      "lastHeartbeatAt": "2026-09-11T08:08:58.071Z",
+      "wpm": 0,
+      "accuracy": 12,
+      "score": 0
+    },
+    {
+      "stationCode": "PC-04",
+      "hostname": "LAB-PC-04",
+      "status": "DISQUALIFIED",
+      "email": "onesirgaming509@gmail.com",
+      "name": "vijay thrideep",
+      "activeSession": "a451c869-c815-42e7-9303-89fc2ff55e5d",
+      "lastHeartbeatAt": "2026-09-11T07:59:14.771Z",
+      "wpm": 7,
+      "accuracy": 87.1,
+      "score": 610
+    },
+    {
+      "stationCode": "PC-05",
+      "hostname": "LAB-PC-05",
       "status": "SUBMITTED",
-      "email": "contact@example.com",
-      "activeSession": "fe18c860-fa61-4129-8527-49a861e411d9",
-      "lastHeartbeatAt": "2026-09-05T18:28:31.729Z",
-      "wpm": 16,
-      "accuracy": 4.3,
-      "score": 69
+      "email": "hannamaria897@gmail.com",
+      "name": "Hanna Maria Shibu",
+      "activeSession": "e4e99cb7-5178-4956-8775-bad45519daf1",
+      "lastHeartbeatAt": "2026-09-11T08:08:37.955Z",
+      "wpm": 14,
+      "accuracy": 99.7,
+      "score": 1396
+    },
+    {
+      "stationCode": "PC-06",
+      "hostname": "LAB-PC-06",
+      "status": "DISQUALIFIED",
+      "email": "jeswinjacobkallani@gmail.com",
+      "name": "jeswin jacob",
+      "activeSession": "9bc14262-fe7c-44ca-9ee2-2a802c640b73",
+      "lastHeartbeatAt": "2026-09-11T08:09:21.017Z",
+      "wpm": 3,
+      "accuracy": 100,
+      "score": 300
+    },
+    {
+      "stationCode": "PC-07",
+      "hostname": "LAB-PC-07",
+      "status": "DISQUALIFIED",
+      "email": "niranjansnair5043@gmail.com",
+      "name": "niranjan s nair",
+      "activeSession": "cb995e23-a6e7-4007-ba3b-2c1e34c5e7a9",
+      "lastHeartbeatAt": "2026-09-11T08:09:41.837Z",
+      "wpm": 0,
+      "accuracy": 10.2,
+      "score": 0
+    },
+    {
+      "stationCode": "PC-08",
+      "hostname": "LAB-PC-08",
+      "status": "SUBMITTED",
+      "email": "uzumakionesir@gmail.com",
+      "name": "vinay thrideep",
+      "activeSession": "4defeebc-0f68-4fbe-9ee2-a67518a550e5",
+      "lastHeartbeatAt": "2026-09-11T08:09:33.515Z",
+      "wpm": 7,
+      "accuracy": 97.8,
+      "score": 685
+    },
+    {
+      "stationCode": "PC-09",
+      "hostname": "LAB-PC-09",
+      "status": "DISQUALIFIED",
+      "email": "athulathulathu47@gmail.com",
+      "name": "Athul K K",
+      "activeSession": "4ba17144-e5c1-48b0-b23b-e0d293c67de2",
+      "lastHeartbeatAt": "2026-09-11T08:09:54.798Z",
+      "wpm": 1,
+      "accuracy": 85.5,
+      "score": 86
+    },
+    {
+      "stationCode": "PC-10",
+      "hostname": "LAB-PC-10",
+      "status": "DISQUALIFIED",
+      "email": "seemaanil981@gmail.com",
+      "name": "ARYA  LAKSHMY O A",
+      "activeSession": "1bf0690f-7ee9-40dd-8e31-4202d14309b7",
+      "lastHeartbeatAt": "2026-09-11T08:08:45.381Z",
+      "wpm": 8,
+      "accuracy": 95.8,
+      "score": 766
+    },
+    {
+      "stationCode": "PC-11",
+      "hostname": "LAB-PC-11",
+      "status": "DISQUALIFIED",
+      "email": "abhijithsajeevan03@gmail.com",
+      "name": "ABHIJITH",
+      "activeSession": "8ef334f3-4934-415c-9636-127a2a8a84bd",
+      "lastHeartbeatAt": "2026-09-11T08:08:56.225Z",
+      "wpm": 0,
+      "accuracy": 85.9,
+      "score": 0
+    },
+    {
+      "stationCode": "PC-12",
+      "hostname": "LAB-PC-12",
+      "status": "SUBMITTED",
+      "email": "annannajose591@gmail.com",
+      "name": "Ann Anna Jose",
+      "activeSession": "6b742988-1152-42d7-adfd-9c1a6be69f69",
+      "lastHeartbeatAt": "2026-09-11T08:08:34.990Z",
+      "wpm": 11,
+      "accuracy": 99.1,
+      "score": 1090
+    },
+    {
+      "stationCode": "PC-13",
+      "hostname": "LAB-PC-13",
+      "status": "DISQUALIFIED",
+      "email": "joetom2259@gmail.com",
+      "name": "Joe Tom",
+      "activeSession": "87f0fb0f-e773-44d5-be8d-b9c2a135876b",
+      "lastHeartbeatAt": "2026-09-11T08:09:41.644Z",
+      "wpm": 7,
+      "accuracy": 91.3,
+      "score": 639
+    },
+    {
+      "stationCode": "PC-14",
+      "hostname": "LAB-PC-14",
+      "status": "SUBMITTED",
+      "email": "arunjoy300@gmail.com",
+      "name": "ARUN JOY",
+      "activeSession": "9758a176-da8e-4b55-958f-fcaa41a273aa",
+      "lastHeartbeatAt": "2026-09-11T08:08:44.508Z",
+      "wpm": 6,
+      "accuracy": 83.3,
+      "score": 500
+    },
+    {
+      "stationCode": "PC-15",
+      "hostname": "LAB-PC-15",
+      "status": "DISQUALIFIED",
+      "email": "thejusau@gmail.com",
+      "name": "Thejus AU",
+      "activeSession": "31ee5879-f3fd-4373-a1c6-b3e6a0de0f47",
+      "lastHeartbeatAt": "2026-09-11T08:10:11.796Z",
+      "wpm": 3,
+      "accuracy": 94.4,
+      "score": 283
+    },
+    {
+      "stationCode": "PC-16",
+      "hostname": "LAB-PC-16",
+      "status": "DISQUALIFIED",
+      "email": "mebymanoj31@gmail.com",
+      "name": "Meby Manoj",
+      "activeSession": "b6ab5233-2c31-495c-a71a-ce6ea8355ea4",
+      "lastHeartbeatAt": "2026-09-11T08:08:50.170Z",
+      "wpm": 6,
+      "accuracy": 22.6,
+      "score": 136
+    },
+    {
+      "stationCode": "PC-17",
+      "hostname": "LAB-PC-17",
+      "status": "DISQUALIFIED",
+      "email": "ananda.cea2226@saintgits.org",
+      "name": "anand anilkumar",
+      "activeSession": "d35e3df6-f2a6-4adf-97ca-9bbf37097565",
+      "lastHeartbeatAt": "2026-09-11T07:59:07.539Z",
+      "wpm": 2,
+      "accuracy": 100,
+      "score": 200
+    },
+    {
+      "stationCode": "PC-18",
+      "hostname": "LAB-PC-18",
+      "status": "SUBMITTED",
+      "email": "vedavyasps7@gmail.com",
+      "name": "VEDAVYAS P S",
+      "activeSession": "8f27b1a4-7035-4982-aa52-8eadbae38e3b",
+      "lastHeartbeatAt": "2026-09-11T08:10:00.129Z",
+      "wpm": 4,
+      "accuracy": 99.1,
+      "score": 396
+    },
+    {
+      "stationCode": "PC-19",
+      "hostname": "LAB-PC-19",
+      "status": "DISQUALIFIED",
+      "email": "arjungopakumar35@gmail.com",
+      "name": "arjun gopakumar",
+      "activeSession": "0bb00282-762a-4d21-80cb-40a1ce7beb6b",
+      "lastHeartbeatAt": "2026-09-11T08:09:39.078Z",
+      "wpm": 9,
+      "accuracy": 98.8,
+      "score": 889
+    },
+    {
+      "stationCode": "PC-20",
+      "hostname": "LAB-PC-20",
+      "status": "SUBMITTED",
+      "email": "bibiiiiiii67@gmail.com",
+      "name": "karthik k anoj",
+      "activeSession": "745aa211-ec85-489d-9051-13d347ce8d42",
+      "lastHeartbeatAt": "2026-09-11T08:10:05.200Z",
+      "wpm": 11,
+      "accuracy": 100,
+      "score": 1100
+    },
+    {
+      "stationCode": "PC-21",
+      "hostname": "LAB-PC-21",
+      "status": "DISQUALIFIED",
+      "email": "msharikrishnan496@gmail.com",
+      "name": "harikrishnan",
+      "activeSession": "3e43d37c-2865-44ca-a06c-f6da60f356fe",
+      "lastHeartbeatAt": "2026-09-11T08:09:54.397Z",
+      "wpm": 9,
+      "accuracy": 98.8,
+      "score": 889
+    },
+    {
+      "stationCode": "PC-22",
+      "hostname": "LAB-PC-22",
+      "status": "DISQUALIFIED",
+      "email": "sajipadavila@gmail.com",
+      "name": "Albin Saji",
+      "activeSession": "76e38ebe-4f50-4f2d-97c4-3043264ae6dc",
+      "lastHeartbeatAt": "2026-09-11T08:10:18.146Z",
+      "wpm": 9,
+      "accuracy": 97.5,
+      "score": 878
+    },
+    {
+      "stationCode": "PC-23",
+      "hostname": "LAB-PC-23",
+      "status": "SUBMITTED",
+      "email": "adwaiths183@gmail.com",
+      "name": "Adwaith S",
+      "activeSession": "b4004686-88fe-4669-bea8-fcd731da593c",
+      "lastHeartbeatAt": "2026-09-11T08:08:20.765Z",
+      "wpm": 12,
+      "accuracy": 97.3,
+      "score": 1168
+    },
+    {
+      "stationCode": "PC-24",
+      "hostname": "LAB-PC-24",
+      "status": "DISQUALIFIED",
+      "email": "vallavasserylenin@gmail.com",
+      "name": "navaneethkrishna l",
+      "activeSession": "e30ee33b-2114-4081-8108-3cc74eede586",
+      "lastHeartbeatAt": "2026-09-11T08:08:13.395Z",
+      "wpm": 7,
+      "accuracy": 81.8,
+      "score": 573
+    },
+    {
+      "stationCode": "PC-25",
+      "hostname": "LAB-PC-25",
+      "status": "SUBMITTED",
+      "email": "epabhinand6@gmail.com",
+      "name": "Abhinand E.P",
+      "activeSession": "4b7c0d45-b81a-4b00-8ec3-6e1edb868033",
+      "lastHeartbeatAt": "2026-09-11T08:09:20.782Z",
+      "wpm": 9,
+      "accuracy": 100,
+      "score": 900
     }
   ],
-  "nextStationNumber": 4,
+  "nextStationNumber": 26,
   "attempts": [
     [
-      "noreply@example.com-1",
+      "vallavasserylenin@gmail.com-1",
       {
-        "email": "noreply@example.com",
+        "email": "vallavasserylenin@gmail.com",
+        "name": "navaneethkrishna l",
+        "stationCode": "PC-24",
+        "round": 1,
+        "wpm": 7,
+        "accuracy": 81.8,
+        "score": 573,
+        "totalErrors": 14,
+        "submittedAt": "2026-09-11T07:57:38.176Z"
+      }
+    ],
+    [
+      "jeswinjacobkallani@gmail.com-1",
+      {
+        "email": "jeswinjacobkallani@gmail.com",
+        "name": "jeswin jacob",
+        "stationCode": "PC-06",
+        "round": 1,
+        "wpm": 3,
+        "accuracy": 100,
+        "score": 300,
+        "totalErrors": 0,
+        "submittedAt": "2026-09-11T07:57:38.180Z"
+      }
+    ],
+    [
+      "bibiiiiiii67@gmail.com-1",
+      {
+        "email": "bibiiiiiii67@gmail.com",
+        "name": "karthik k anoj",
+        "stationCode": "PC-20",
+        "round": 1,
+        "wpm": 12,
+        "accuracy": 99.1,
+        "score": 1189,
+        "totalErrors": 1,
+        "submittedAt": "2026-09-11T07:57:38.196Z"
+      }
+    ],
+    [
+      "hannamaria897@gmail.com-1",
+      {
+        "email": "hannamaria897@gmail.com",
+        "name": "Hanna Maria Shibu",
+        "stationCode": "PC-05",
+        "round": 1,
+        "wpm": 18,
+        "accuracy": 99.3,
+        "score": 1787,
+        "totalErrors": 1,
+        "submittedAt": "2026-09-11T07:57:38.293Z"
+      }
+    ],
+    [
+      "annannajose591@gmail.com-1",
+      {
+        "email": "annannajose591@gmail.com",
+        "name": "Ann Anna Jose",
+        "stationCode": "PC-12",
+        "round": 1,
+        "wpm": 11,
+        "accuracy": 98.3,
+        "score": 1081,
+        "totalErrors": 2,
+        "submittedAt": "2026-09-11T07:57:38.315Z"
+      }
+    ],
+    [
+      "onesirgaming509@gmail.com-1",
+      {
+        "email": "onesirgaming509@gmail.com",
+        "name": "vijay thrideep",
+        "stationCode": "PC-04",
+        "round": 1,
+        "wpm": 7,
+        "accuracy": 87.1,
+        "score": 610,
+        "totalErrors": 17,
+        "submittedAt": "2026-09-11T07:57:38.318Z"
+      }
+    ],
+    [
+      "ananda.cea2226@saintgits.org-1",
+      {
+        "email": "ananda.cea2226@saintgits.org",
+        "name": "anand anilkumar",
+        "stationCode": "PC-17",
+        "round": 1,
+        "wpm": 2,
+        "accuracy": 100,
+        "score": 200,
+        "totalErrors": 0,
+        "submittedAt": "2026-09-11T07:57:38.485Z"
+      }
+    ],
+    [
+      "adwaiths183@gmail.com-1",
+      {
+        "email": "adwaiths183@gmail.com",
+        "name": "Adwaith S",
+        "stationCode": "PC-23",
+        "round": 1,
+        "wpm": 14,
+        "accuracy": 96.6,
+        "score": 1352,
+        "totalErrors": 5,
+        "submittedAt": "2026-09-11T07:57:38.503Z"
+      }
+    ],
+    [
+      "joetom2259@gmail.com-1",
+      {
+        "email": "joetom2259@gmail.com",
+        "name": "Joe Tom",
+        "stationCode": "PC-13",
+        "round": 1,
+        "wpm": 7,
+        "accuracy": 91.3,
+        "score": 639,
+        "totalErrors": 6,
+        "submittedAt": "2026-09-11T07:57:38.678Z"
+      }
+    ],
+    [
+      "uzumakionesir@gmail.com-1",
+      {
+        "email": "uzumakionesir@gmail.com",
+        "name": "vinay thrideep",
+        "stationCode": "PC-08",
+        "round": 1,
+        "wpm": 13,
+        "accuracy": 99.2,
+        "score": 1290,
+        "totalErrors": 1,
+        "submittedAt": "2026-09-11T07:57:38.726Z"
+      }
+    ],
+    [
+      "msharikrishnan496@gmail.com-1",
+      {
+        "email": "msharikrishnan496@gmail.com",
+        "name": "harikrishnan",
+        "stationCode": "PC-21",
+        "round": 1,
+        "wpm": 9,
+        "accuracy": 98.8,
+        "score": 889,
+        "totalErrors": 1,
+        "submittedAt": "2026-09-11T07:57:38.746Z"
+      }
+    ],
+    [
+      "abhijithsajeevan03@gmail.com-1",
+      {
+        "email": "abhijithsajeevan03@gmail.com",
+        "name": "ABHIJITH",
+        "stationCode": "PC-11",
+        "round": 1,
+        "wpm": 0,
+        "accuracy": 85.9,
+        "score": 0,
+        "totalErrors": 19,
+        "submittedAt": "2026-09-11T07:57:38.763Z"
+      }
+    ],
+    [
+      "thejusau@gmail.com-1",
+      {
+        "email": "thejusau@gmail.com",
+        "name": "Thejus AU",
+        "stationCode": "PC-15",
+        "round": 1,
+        "wpm": 3,
+        "accuracy": 94.4,
+        "score": 283,
+        "totalErrors": 5,
+        "submittedAt": "2026-09-11T07:57:38.832Z"
+      }
+    ],
+    [
+      "sree192006@gmail.com-1",
+      {
+        "email": "sree192006@gmail.com",
+        "name": "sreedev sreejeh",
+        "stationCode": "PC-03",
+        "round": 1,
+        "wpm": 0,
+        "accuracy": 12,
+        "score": 0,
+        "totalErrors": 117,
+        "submittedAt": "2026-09-11T07:57:38.870Z"
+      }
+    ],
+    [
+      "ashajumone@gmail.com-1",
+      {
+        "email": "ashajumone@gmail.com",
+        "name": "Albin Shajumone",
+        "stationCode": "PC-02",
+        "round": 1,
+        "wpm": 24,
+        "accuracy": 99.6,
+        "score": 2390,
+        "totalErrors": 1,
+        "submittedAt": "2026-09-11T07:57:38.890Z"
+      }
+    ],
+    [
+      "epabhinand6@gmail.com-1",
+      {
+        "email": "epabhinand6@gmail.com",
+        "name": "Abhinand E.P",
+        "stationCode": "PC-25",
+        "round": 1,
+        "wpm": 10,
+        "accuracy": 100,
+        "score": 1000,
+        "totalErrors": 0,
+        "submittedAt": "2026-09-11T07:57:38.972Z"
+      }
+    ],
+    [
+      "arunjoy300@gmail.com-1",
+      {
+        "email": "arunjoy300@gmail.com",
+        "name": "ARUN JOY",
+        "stationCode": "PC-14",
+        "round": 1,
+        "wpm": 11,
+        "accuracy": 90.5,
+        "score": 996,
+        "totalErrors": 13,
+        "submittedAt": "2026-09-11T07:57:39.003Z"
+      }
+    ],
+    [
+      "arjungopakumar35@gmail.com-1",
+      {
+        "email": "arjungopakumar35@gmail.com",
+        "name": "arjun gopakumar",
+        "stationCode": "PC-19",
+        "round": 1,
+        "wpm": 9,
+        "accuracy": 98.8,
+        "score": 889,
+        "totalErrors": 1,
+        "submittedAt": "2026-09-11T07:57:39.101Z"
+      }
+    ],
+    [
+      "mebymanoj31@gmail.com-1",
+      {
+        "email": "mebymanoj31@gmail.com",
+        "name": "Meby Manoj",
+        "stationCode": "PC-16",
+        "round": 1,
+        "wpm": 6,
+        "accuracy": 22.6,
+        "score": 136,
+        "totalErrors": 82,
+        "submittedAt": "2026-09-11T07:57:39.104Z"
+      }
+    ],
+    [
+      "niranjansnair5043@gmail.com-1",
+      {
+        "email": "niranjansnair5043@gmail.com",
+        "name": "niranjan s nair",
+        "stationCode": "PC-07",
+        "round": 1,
+        "wpm": 0,
+        "accuracy": 10.2,
+        "score": 0,
+        "totalErrors": 79,
+        "submittedAt": "2026-09-11T07:57:39.128Z"
+      }
+    ],
+    [
+      "seemaanil981@gmail.com-1",
+      {
+        "email": "seemaanil981@gmail.com",
+        "name": "ARYA  LAKSHMY O A",
+        "stationCode": "PC-10",
+        "round": 1,
+        "wpm": 8,
+        "accuracy": 95.8,
+        "score": 766,
+        "totalErrors": 6,
+        "submittedAt": "2026-09-11T07:57:39.132Z"
+      }
+    ],
+    [
+      "athulathulathu47@gmail.com-1",
+      {
+        "email": "athulathulathu47@gmail.com",
+        "name": "Athul K K",
+        "stationCode": "PC-09",
+        "round": 1,
+        "wpm": 1,
+        "accuracy": 85.5,
+        "score": 86,
+        "totalErrors": 18,
+        "submittedAt": "2026-09-11T07:57:39.136Z"
+      }
+    ],
+    [
+      "vedavyasps7@gmail.com-1",
+      {
+        "email": "vedavyasps7@gmail.com",
+        "name": "VEDAVYAS P S",
+        "stationCode": "PC-18",
+        "round": 1,
+        "wpm": 13,
+        "accuracy": 100,
+        "score": 1300,
+        "totalErrors": 0,
+        "submittedAt": "2026-09-11T07:57:39.139Z"
+      }
+    ],
+    [
+      "sajipadavila@gmail.com-1",
+      {
+        "email": "sajipadavila@gmail.com",
+        "name": "Albin Saji",
+        "stationCode": "PC-22",
+        "round": 1,
+        "wpm": 9,
+        "accuracy": 97.5,
+        "score": 878,
+        "totalErrors": 2,
+        "submittedAt": "2026-09-11T07:57:39.142Z"
+      }
+    ],
+    [
+      "jjthekkepalackal@gmail.com-1",
+      {
+        "email": "jjthekkepalackal@gmail.com",
+        "name": "Jinson Jose",
         "stationCode": "PC-01",
         "round": 1,
-        "wpm": 15,
-        "accuracy": 39.1,
-        "score": 587,
-        "totalErrors": 42,
-        "submittedAt": "2026-09-05T18:17:52.113Z"
+        "wpm": 13,
+        "accuracy": 98.8,
+        "score": 1284,
+        "totalErrors": 2,
+        "submittedAt": "2026-09-11T07:57:39.144Z"
       }
     ],
     [
-      "hello@example.com-1",
+      "vedavyasps7@gmail.com-2",
       {
-        "email": "hello@example.com",
-        "stationCode": "PC-02",
-        "round": 1,
-        "wpm": 240,
-        "accuracy": 2.9,
-        "score": 696,
-        "totalErrors": 264,
-        "submittedAt": "2026-09-05T18:17:30.024Z"
+        "email": "vedavyasps7@gmail.com",
+        "name": "VEDAVYAS P S",
+        "stationCode": "PC-18",
+        "round": 2,
+        "wpm": 4,
+        "accuracy": 99.1,
+        "score": 396,
+        "totalErrors": 2,
+        "submittedAt": "2026-09-11T08:06:38.740Z"
       }
     ],
     [
-      "contact@example.com-1",
+      "uzumakionesir@gmail.com-2",
       {
-        "email": "contact@example.com",
-        "stationCode": "PC-03",
-        "round": 1,
-        "wpm": 55,
-        "accuracy": 29.7,
-        "score": 1634,
-        "totalErrors": 26,
-        "submittedAt": "2026-09-05T18:17:52.412Z"
+        "email": "uzumakionesir@gmail.com",
+        "name": "vinay thrideep",
+        "stationCode": "PC-08",
+        "round": 2,
+        "wpm": 7,
+        "accuracy": 97.8,
+        "score": 685,
+        "totalErrors": 10,
+        "submittedAt": "2026-09-11T08:06:39.500Z"
       }
     ],
     [
-      "hello@example.com-2",
+      "epabhinand6@gmail.com-2",
       {
-        "email": "hello@example.com",
+        "email": "epabhinand6@gmail.com",
+        "name": "Abhinand E.P",
+        "stationCode": "PC-25",
+        "round": 2,
+        "wpm": 9,
+        "accuracy": 100,
+        "score": 900,
+        "totalErrors": 0,
+        "submittedAt": "2026-09-11T08:06:39.523Z"
+      }
+    ],
+    [
+      "adwaiths183@gmail.com-2",
+      {
+        "email": "adwaiths183@gmail.com",
+        "name": "Adwaith S",
+        "stationCode": "PC-23",
+        "round": 2,
+        "wpm": 12,
+        "accuracy": 97.3,
+        "score": 1168,
+        "totalErrors": 11,
+        "submittedAt": "2026-09-11T08:06:39.538Z"
+      }
+    ],
+    [
+      "bibiiiiiii67@gmail.com-2",
+      {
+        "email": "bibiiiiiii67@gmail.com",
+        "name": "karthik k anoj",
+        "stationCode": "PC-20",
+        "round": 2,
+        "wpm": 11,
+        "accuracy": 100,
+        "score": 1100,
+        "totalErrors": 0,
+        "submittedAt": "2026-09-11T08:06:39.542Z"
+      }
+    ],
+    [
+      "jjthekkepalackal@gmail.com-2",
+      {
+        "email": "jjthekkepalackal@gmail.com",
+        "name": "Jinson Jose",
+        "stationCode": "PC-01",
+        "round": 2,
+        "wpm": 19,
+        "accuracy": 99.4,
+        "score": 1889,
+        "totalErrors": 3,
+        "submittedAt": "2026-09-11T08:06:39.629Z"
+      }
+    ],
+    [
+      "arunjoy300@gmail.com-2",
+      {
+        "email": "arunjoy300@gmail.com",
+        "name": "ARUN JOY",
+        "stationCode": "PC-14",
+        "round": 2,
+        "wpm": 6,
+        "accuracy": 83.3,
+        "score": 500,
+        "totalErrors": 67,
+        "submittedAt": "2026-09-11T08:06:39.667Z"
+      }
+    ],
+    [
+      "ashajumone@gmail.com-2",
+      {
+        "email": "ashajumone@gmail.com",
+        "name": "Albin Shajumone",
         "stationCode": "PC-02",
         "round": 2,
-        "wpm": 42,
-        "accuracy": 62.3,
-        "score": 2617,
-        "totalErrors": 154,
-        "submittedAt": "2026-09-05T18:26:55.862Z"
+        "wpm": 11,
+        "accuracy": 99.5,
+        "score": 1095,
+        "totalErrors": 3,
+        "submittedAt": "2026-09-11T08:06:39.680Z"
       }
     ],
     [
-      "contact@example.com-2",
+      "hannamaria897@gmail.com-2",
       {
-        "email": "contact@example.com",
-        "stationCode": "PC-03",
+        "email": "hannamaria897@gmail.com",
+        "name": "Hanna Maria Shibu",
+        "stationCode": "PC-05",
         "round": 2,
-        "wpm": 16,
-        "accuracy": 4.3,
-        "score": 69,
-        "totalErrors": 221,
-        "submittedAt": "2026-09-05T18:27:28.230Z"
+        "wpm": 14,
+        "accuracy": 99.7,
+        "score": 1396,
+        "totalErrors": 1,
+        "submittedAt": "2026-09-11T08:06:39.702Z"
+      }
+    ],
+    [
+      "annannajose591@gmail.com-2",
+      {
+        "email": "annannajose591@gmail.com",
+        "name": "Ann Anna Jose",
+        "stationCode": "PC-12",
+        "round": 2,
+        "wpm": 11,
+        "accuracy": 99.1,
+        "score": 1090,
+        "totalErrors": 3,
+        "submittedAt": "2026-09-11T08:06:39.706Z"
       }
     ]
   ],
   "incidents": [],
   "auditLogs": [
     {
-      "id": "audit-1788632881944-r9r7",
-      "timestamp": "11:58:01 PM",
-      "actor": "host",
-      "action": "FINALIZE_CONTEST",
-      "target": "COMPETITION",
-      "details": "Contest finalized. Official results frozen."
+      "id": "audit-1789113999706-qrdm",
+      "timestamp": "1:36:39 pm",
+      "actor": "annannajose591@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-12",
+      "details": "Submitted Round 2: 11 WPM (33 correct words), 99.1% Accuracy, Score 1090"
     },
     {
-      "id": "audit-1788632848230-283r",
-      "timestamp": "11:57:28 PM",
-      "actor": "contact@example.com",
+      "id": "audit-1789113999702-u7yj",
+      "timestamp": "1:36:39 pm",
+      "actor": "hannamaria897@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-05",
+      "details": "Submitted Round 2: 14 WPM (41 correct words), 99.7% Accuracy, Score 1396"
+    },
+    {
+      "id": "audit-1789113999680-6cdx",
+      "timestamp": "1:36:39 pm",
+      "actor": "ashajumone@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-02",
+      "details": "Submitted Round 2: 11 WPM (34 correct words), 99.5% Accuracy, Score 1095"
+    },
+    {
+      "id": "audit-1789113999667-xxwm",
+      "timestamp": "1:36:39 pm",
+      "actor": "arunjoy300@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-14",
+      "details": "Submitted Round 2: 6 WPM (18 correct words), 83.3% Accuracy, Score 500"
+    },
+    {
+      "id": "audit-1789113999651-qxnb",
+      "timestamp": "1:36:39 pm",
+      "actor": "SYSTEM",
+      "action": "ROUND_COMPLETE",
+      "target": "ROUND_2",
+      "details": "Round 2 timer reached zero."
+    },
+    {
+      "id": "audit-1789113999629-gpjj",
+      "timestamp": "1:36:39 pm",
+      "actor": "jjthekkepalackal@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-01",
+      "details": "Submitted Round 2: 19 WPM (57 correct words), 99.4% Accuracy, Score 1889"
+    },
+    {
+      "id": "audit-1789113999542-y2sm",
+      "timestamp": "1:36:39 pm",
+      "actor": "bibiiiiiii67@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-20",
+      "details": "Submitted Round 2: 11 WPM (34 correct words), 100% Accuracy, Score 1100"
+    },
+    {
+      "id": "audit-1789113999538-cta3",
+      "timestamp": "1:36:39 pm",
+      "actor": "adwaiths183@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-23",
+      "details": "Submitted Round 2: 12 WPM (37 correct words), 97.3% Accuracy, Score 1168"
+    },
+    {
+      "id": "audit-1789113999523-lorx",
+      "timestamp": "1:36:39 pm",
+      "actor": "epabhinand6@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-25",
+      "details": "Submitted Round 2: 9 WPM (26 correct words), 100% Accuracy, Score 900"
+    },
+    {
+      "id": "audit-1789113999500-vj99",
+      "timestamp": "1:36:39 pm",
+      "actor": "uzumakionesir@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-08",
+      "details": "Submitted Round 2: 7 WPM (22 correct words), 97.8% Accuracy, Score 685"
+    },
+    {
+      "id": "audit-1789113998740-o69g",
+      "timestamp": "1:36:38 pm",
+      "actor": "vedavyasps7@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-18",
+      "details": "Submitted Round 2: 4 WPM (12 correct words), 99.1% Accuracy, Score 396"
+    },
+    {
+      "id": "audit-1789113818332-loe6",
+      "timestamp": "1:33:38 pm",
+      "actor": "SYSTEM",
+      "action": "ROUND_BEGIN",
+      "target": "ROUND_2",
+      "details": "Round 2 typing phase started (180s)"
+    },
+    {
+      "id": "audit-1789113813306-tfo1",
+      "timestamp": "1:33:33 pm",
+      "actor": "max@host.com",
+      "action": "START_ROUND",
+      "target": "ROUND_2",
+      "details": "Initiating Round 2 with a 5s countdown"
+    },
+    {
+      "id": "audit-1789113745566-8jvg",
+      "timestamp": "1:32:25 pm",
+      "actor": "max@host.com",
+      "action": "CALCULATE_QUALIFIERS",
+      "target": "TOP_10",
+      "details": "Selected 10 qualifiers for Round 2 (anti-cheat flagged participants excluded)."
+    },
+    {
+      "id": "audit-1789113459144-dxjw",
+      "timestamp": "1:27:39 pm",
+      "actor": "jjthekkepalackal@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-01",
+      "details": "Submitted Round 1: 13 WPM (13 correct words), 98.8% Accuracy, Score 1284"
+    },
+    {
+      "id": "audit-1789113459142-xjzr",
+      "timestamp": "1:27:39 pm",
+      "actor": "sajipadavila@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-22",
+      "details": "Submitted Round 1: 9 WPM (9 correct words), 97.5% Accuracy, Score 878"
+    },
+    {
+      "id": "audit-1789113459139-g52n",
+      "timestamp": "1:27:39 pm",
+      "actor": "vedavyasps7@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-18",
+      "details": "Submitted Round 1: 13 WPM (13 correct words), 100% Accuracy, Score 1300"
+    },
+    {
+      "id": "audit-1789113459136-6uhk",
+      "timestamp": "1:27:39 pm",
+      "actor": "athulathulathu47@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-09",
+      "details": "Submitted Round 1: 1 WPM (1 correct words), 85.5% Accuracy, Score 86"
+    },
+    {
+      "id": "audit-1789113459132-uqn7",
+      "timestamp": "1:27:39 pm",
+      "actor": "seemaanil981@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-10",
+      "details": "Submitted Round 1: 8 WPM (8 correct words), 95.8% Accuracy, Score 766"
+    },
+    {
+      "id": "audit-1789113459128-gpnh",
+      "timestamp": "1:27:39 pm",
+      "actor": "niranjansnair5043@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-07",
+      "details": "Submitted Round 1: 0 WPM (0 correct words), 10.2% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789113459104-uov0",
+      "timestamp": "1:27:39 pm",
+      "actor": "mebymanoj31@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-16",
+      "details": "Submitted Round 1: 6 WPM (6 correct words), 22.6% Accuracy, Score 136"
+    },
+    {
+      "id": "audit-1789113459101-glwq",
+      "timestamp": "1:27:39 pm",
+      "actor": "arjungopakumar35@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-19",
+      "details": "Submitted Round 1: 9 WPM (9 correct words), 98.8% Accuracy, Score 889"
+    },
+    {
+      "id": "audit-1789113459099-k2tn",
+      "timestamp": "1:27:39 pm",
+      "actor": "SYSTEM",
+      "action": "ROUND_COMPLETE",
+      "target": "ROUND_1",
+      "details": "Round 1 timer reached zero."
+    },
+    {
+      "id": "audit-1789113459003-04un",
+      "timestamp": "1:27:39 pm",
+      "actor": "arunjoy300@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-14",
+      "details": "Submitted Round 1: 11 WPM (11 correct words), 90.5% Accuracy, Score 996"
+    },
+    {
+      "id": "audit-1789113458972-w8le",
+      "timestamp": "1:27:38 pm",
+      "actor": "epabhinand6@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-25",
+      "details": "Submitted Round 1: 10 WPM (10 correct words), 100% Accuracy, Score 1000"
+    },
+    {
+      "id": "audit-1789113458890-dwc7",
+      "timestamp": "1:27:38 pm",
+      "actor": "ashajumone@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-02",
+      "details": "Submitted Round 1: 24 WPM (24 correct words), 99.6% Accuracy, Score 2390"
+    },
+    {
+      "id": "audit-1789113458870-7xgf",
+      "timestamp": "1:27:38 pm",
+      "actor": "sree192006@gmail.com",
       "action": "SUBMIT_ATTEMPT",
       "target": "PC-03",
-      "details": "Submitted Round 2: 16 WPM, 4.3% Accuracy, Score 69"
+      "details": "Submitted Round 1: 0 WPM (0 correct words), 12% Accuracy, Score 0"
     },
     {
-      "id": "audit-1788632848014-uv8n",
-      "timestamp": "11:57:28 PM",
+      "id": "audit-1789113458832-4uoq",
+      "timestamp": "1:27:38 pm",
+      "actor": "thejusau@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-15",
+      "details": "Submitted Round 1: 3 WPM (3 correct words), 94.4% Accuracy, Score 283"
+    },
+    {
+      "id": "audit-1789113458763-gvcz",
+      "timestamp": "1:27:38 pm",
+      "actor": "abhijithsajeevan03@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-11",
+      "details": "Submitted Round 1: 0 WPM (0 correct words), 85.9% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789113458746-w7vx",
+      "timestamp": "1:27:38 pm",
+      "actor": "msharikrishnan496@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-21",
+      "details": "Submitted Round 1: 9 WPM (9 correct words), 98.8% Accuracy, Score 889"
+    },
+    {
+      "id": "audit-1789113458726-otc9",
+      "timestamp": "1:27:38 pm",
+      "actor": "uzumakionesir@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-08",
+      "details": "Submitted Round 1: 13 WPM (13 correct words), 99.2% Accuracy, Score 1290"
+    },
+    {
+      "id": "audit-1789113458678-eqys",
+      "timestamp": "1:27:38 pm",
+      "actor": "joetom2259@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-13",
+      "details": "Submitted Round 1: 7 WPM (7 correct words), 91.3% Accuracy, Score 639"
+    },
+    {
+      "id": "audit-1789113458503-3cvp",
+      "timestamp": "1:27:38 pm",
+      "actor": "adwaiths183@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-23",
+      "details": "Submitted Round 1: 14 WPM (13 correct words), 96.6% Accuracy, Score 1352"
+    },
+    {
+      "id": "audit-1789113458485-c4b5",
+      "timestamp": "1:27:38 pm",
+      "actor": "ananda.cea2226@saintgits.org",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-17",
+      "details": "Submitted Round 1: 2 WPM (2 correct words), 100% Accuracy, Score 200"
+    },
+    {
+      "id": "audit-1789113458318-y6t4",
+      "timestamp": "1:27:38 pm",
+      "actor": "onesirgaming509@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-04",
+      "details": "Submitted Round 1: 7 WPM (7 correct words), 87.1% Accuracy, Score 610"
+    },
+    {
+      "id": "audit-1789113458315-xap6",
+      "timestamp": "1:27:38 pm",
+      "actor": "annannajose591@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-12",
+      "details": "Submitted Round 1: 11 WPM (11 correct words), 98.3% Accuracy, Score 1081"
+    },
+    {
+      "id": "audit-1789113458293-p09q",
+      "timestamp": "1:27:38 pm",
+      "actor": "hannamaria897@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-05",
+      "details": "Submitted Round 1: 18 WPM (17 correct words), 99.3% Accuracy, Score 1787"
+    },
+    {
+      "id": "audit-1789113458196-qs85",
+      "timestamp": "1:27:38 pm",
+      "actor": "bibiiiiiii67@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-20",
+      "details": "Submitted Round 1: 12 WPM (12 correct words), 99.1% Accuracy, Score 1189"
+    },
+    {
+      "id": "audit-1789113458180-rttw",
+      "timestamp": "1:27:38 pm",
+      "actor": "jeswinjacobkallani@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-06",
+      "details": "Submitted Round 1: 3 WPM (3 correct words), 100% Accuracy, Score 300"
+    },
+    {
+      "id": "audit-1789113458176-e51c",
+      "timestamp": "1:27:38 pm",
+      "actor": "vallavasserylenin@gmail.com",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-24",
+      "details": "Submitted Round 1: 7 WPM (7 correct words), 81.8% Accuracy, Score 573"
+    },
+    {
+      "id": "audit-1789113398626-plwf",
+      "timestamp": "1:26:38 pm",
+      "actor": "SYSTEM",
+      "action": "ROUND_BEGIN",
+      "target": "ROUND_1",
+      "details": "Round 1 typing phase started (60s)"
+    },
+    {
+      "id": "audit-1789113393605-9b2a",
+      "timestamp": "1:26:33 pm",
+      "actor": "max@host.com",
+      "action": "START_ROUND",
+      "target": "ROUND_1",
+      "details": "Initiating Round 1 with a 5s countdown"
+    },
+    {
+      "id": "audit-1789112189009-mfi0",
+      "timestamp": "1:06:29 pm",
+      "actor": "max@host.com",
+      "action": "RESET_CONTEST",
+      "target": "COMPETITION",
+      "details": "Reset contest and all stations to clean state."
+    },
+    {
+      "id": "audit-1789111995613-q00d",
+      "timestamp": "1:03:15 pm",
+      "actor": "25@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-13",
+      "details": "Submitted Round 2: 0 WPM (0 correct words), 0.9% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111995569-y97c",
+      "timestamp": "1:03:15 pm",
+      "actor": "43@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-02",
+      "details": "Submitted Round 2: 14 WPM (41 correct words), 98.8% Accuracy, Score 1383"
+    },
+    {
+      "id": "audit-1789111995551-ps4j",
+      "timestamp": "1:03:15 pm",
+      "actor": "37@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-05",
+      "details": "Submitted Round 2: 15 WPM (35 correct words), 99.1% Accuracy, Score 1487"
+    },
+    {
+      "id": "audit-1789111995507-noe5",
+      "timestamp": "1:03:15 pm",
       "actor": "SYSTEM",
       "action": "ROUND_COMPLETE",
       "target": "ROUND_2",
       "details": "Round 2 timer reached zero."
     },
     {
-      "id": "audit-1788632815862-zwe1",
-      "timestamp": "11:56:55 PM",
-      "actor": "hello@example.com",
+      "id": "audit-1789111995505-kgzx",
+      "timestamp": "1:03:15 pm",
+      "actor": "4@ft.in",
       "action": "SUBMIT_ATTEMPT",
-      "target": "PC-02",
-      "details": "Submitted Round 2: 42 WPM, 62.3% Accuracy, Score 2617"
+      "target": "PC-08",
+      "details": "Submitted Round 2: 0 WPM (0 correct words), 66.9% Accuracy, Score 0"
     },
     {
-      "id": "audit-1788632666591-4jkh",
-      "timestamp": "11:54:26 PM",
-      "actor": "SYSTEM",
-      "action": "ROUND_BEGIN",
-      "target": "ROUND_2",
-      "details": "Round 2 typing phase started (180s)"
+      "id": "audit-1789111995462-avin",
+      "timestamp": "1:03:15 pm",
+      "actor": "12@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-21",
+      "details": "Submitted Round 2: 0 WPM (0 correct words), 100% Accuracy, Score 0"
     },
     {
-      "id": "audit-1788632661547-au30",
-      "timestamp": "11:54:21 PM",
-      "actor": "host",
-      "action": "START_ROUND",
-      "target": "ROUND_2",
-      "details": "Initiating Round 2 with a 5s countdown"
+      "id": "audit-1789111995457-6igi",
+      "timestamp": "1:03:15 pm",
+      "actor": "18@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-24",
+      "details": "Submitted Round 2: 0 WPM (0 correct words), 100% Accuracy, Score 0"
     },
     {
-      "id": "audit-1788632294515-bf3a",
-      "timestamp": "11:48:14 PM",
-      "actor": "host",
-      "action": "CALCULATE_QUALIFIERS",
-      "target": "TOP_2",
-      "details": "Selected 2 qualifiers for Round 2."
+      "id": "audit-1789111995383-x7h1",
+      "timestamp": "1:03:15 pm",
+      "actor": "19@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-22",
+      "details": "Submitted Round 2: 14 WPM (39 correct words), 94.4% Accuracy, Score 1322"
     },
     {
-      "id": "audit-1788632272412-nckv",
-      "timestamp": "11:47:52 PM",
-      "actor": "contact@example.com",
+      "id": "audit-1789111995083-4nnz",
+      "timestamp": "1:03:15 pm",
+      "actor": "34@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-16",
+      "details": "Submitted Round 2: 0 WPM (0 correct words), 85.2% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111995080-pwl3",
+      "timestamp": "1:03:15 pm",
+      "actor": "6@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-04",
+      "details": "Submitted Round 2: 0 WPM (0 correct words), 3% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111995077-9jhc",
+      "timestamp": "1:03:15 pm",
+      "actor": "54@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-09",
+      "details": "Submitted Round 2: 0 WPM (0 correct words), 100% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111995061-d571",
+      "timestamp": "1:03:15 pm",
+      "actor": "32@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-20",
+      "details": "Submitted Round 2: 0 WPM (0 correct words), 100% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111994963-mosw",
+      "timestamp": "1:03:14 pm",
+      "actor": "48@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-06",
+      "details": "Submitted Round 2: 20 WPM (60 correct words), 99.6% Accuracy, Score 1992"
+    },
+    {
+      "id": "audit-1789111994866-rscy",
+      "timestamp": "1:03:14 pm",
+      "actor": "39@ft.in",
       "action": "SUBMIT_ATTEMPT",
       "target": "PC-03",
-      "details": "Submitted Round 1: 55 WPM, 29.7% Accuracy, Score 1634"
+      "details": "Submitted Round 2: 0 WPM (1 correct words), 31.4% Accuracy, Score 0"
     },
     {
-      "id": "audit-1788632272113-er6n",
-      "timestamp": "11:47:52 PM",
-      "actor": "noreply@example.com",
+      "id": "audit-1789111994847-cv5d",
+      "timestamp": "1:03:14 pm",
+      "actor": "41@ft.in",
       "action": "SUBMIT_ATTEMPT",
       "target": "PC-01",
-      "details": "Submitted Round 1: 15 WPM, 39.1% Accuracy, Score 587"
+      "details": "Submitted Round 2: 0 WPM (0 correct words), 100% Accuracy, Score 0"
     },
     {
-      "id": "audit-1788632272095-y402",
-      "timestamp": "11:47:52 PM",
-      "actor": "SYSTEM",
-      "action": "ROUND_COMPLETE",
-      "target": "ROUND_1",
-      "details": "Round 1 timer reached zero."
-    },
-    {
-      "id": "audit-1788632250025-5cgo",
-      "timestamp": "11:47:30 PM",
-      "actor": "hello@example.com",
+      "id": "audit-1789111994803-n7f6",
+      "timestamp": "1:03:14 pm",
+      "actor": "57@ft.in",
       "action": "SUBMIT_ATTEMPT",
-      "target": "PC-02",
-      "details": "Submitted Round 1: 240 WPM, 2.9% Accuracy, Score 696"
+      "target": "PC-18",
+      "details": "Submitted Round 2: 0 WPM (0 correct words), 100% Accuracy, Score 0"
     },
     {
-      "id": "audit-1788632211518-61nb",
-      "timestamp": "11:46:51 PM",
-      "actor": "host",
-      "action": "RESTART_ROUND",
-      "target": "ROUND_1",
-      "details": "Restarted Round 1 with new passage \"Algorithms in Motion\""
-    },
-    {
-      "id": "audit-1788631150596-4m4p",
-      "timestamp": "11:29:10 PM",
-      "actor": "SYSTEM",
-      "action": "ROUND_COMPLETE",
-      "target": "ROUND_1",
-      "details": "Round 1 timer reached zero."
-    },
-    {
-      "id": "audit-1788631103359-72j0",
-      "timestamp": "11:28:23 PM",
-      "actor": "hello@example.com",
+      "id": "audit-1789111994771-uocy",
+      "timestamp": "1:03:14 pm",
+      "actor": "23@ft.in",
       "action": "SUBMIT_ATTEMPT",
-      "target": "PC-02",
-      "details": "Submitted Round 1: 268 WPM, 1.1% Accuracy, Score 295"
+      "target": "PC-12",
+      "details": "Submitted Round 2: 0 WPM (0 correct words), 2.1% Accuracy, Score 0"
     },
     {
-      "id": "audit-1788631090090-zgl9",
-      "timestamp": "11:28:10 PM",
-      "actor": "host",
-      "action": "RESTART_ROUND",
-      "target": "ROUND_1",
-      "details": "Restarted Round 1 with new passage \"The Essence of Systems\""
+      "id": "audit-1789111994767-7j6p",
+      "timestamp": "1:03:14 pm",
+      "actor": "2@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-14",
+      "details": "Submitted Round 2: 0 WPM (0 correct words), 100% Accuracy, Score 0"
     },
     {
-      "id": "audit-1788631066927-ays2",
-      "timestamp": "11:27:46 PM",
+      "id": "audit-1789111994642-urgt",
+      "timestamp": "1:03:14 pm",
+      "actor": "8@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-11",
+      "details": "Submitted Round 2: 0 WPM (0 correct words), 100% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111994611-46ne",
+      "timestamp": "1:03:14 pm",
+      "actor": "28@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-15",
+      "details": "Submitted Round 2: 0 WPM (0 correct words), 59.2% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111994599-yswt",
+      "timestamp": "1:03:14 pm",
+      "actor": "58@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-17",
+      "details": "Submitted Round 2: 0 WPM (0 correct words), 100% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111814168-9hci",
+      "timestamp": "1:00:14 pm",
       "actor": "SYSTEM",
       "action": "ROUND_BEGIN",
       "target": "ROUND_2",
       "details": "Round 2 typing phase started (180s)"
     },
     {
-      "id": "audit-1788631061910-wkw3",
-      "timestamp": "11:27:41 PM",
-      "actor": "host",
+      "id": "audit-1789111809121-1lv8",
+      "timestamp": "1:00:09 pm",
+      "actor": "max@host.com",
       "action": "START_ROUND",
       "target": "ROUND_2",
       "details": "Initiating Round 2 with a 5s countdown"
     },
     {
-      "id": "audit-1788631017865-mzt5",
-      "timestamp": "11:26:57 PM",
+      "id": "audit-1789111756659-80cy",
+      "timestamp": "12:59:16 pm",
+      "actor": "6@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-04",
+      "details": "Submitted Round 1: 0 WPM (0 correct words), 2.5% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111756582-egdf",
+      "timestamp": "12:59:16 pm",
+      "actor": "8@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-11",
+      "details": "Submitted Round 1: 0 WPM (0 correct words), 6.7% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111756563-8iq2",
+      "timestamp": "12:59:16 pm",
+      "actor": "28@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-15",
+      "details": "Submitted Round 1: 0 WPM (0 correct words), 0% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111756538-3p92",
+      "timestamp": "12:59:16 pm",
       "actor": "SYSTEM",
       "action": "ROUND_COMPLETE",
       "target": "ROUND_1",
       "details": "Round 1 timer reached zero."
     },
     {
-      "id": "audit-1788630986499-my2x",
-      "timestamp": "11:26:26 PM",
-      "actor": "hello@example.com",
+      "id": "audit-1789111756496-qgbc",
+      "timestamp": "12:59:16 pm",
+      "actor": "34@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-16",
+      "details": "Submitted Round 1: 9 WPM (9 correct words), 98.6% Accuracy, Score 887"
+    },
+    {
+      "id": "audit-1789111756426-0g40",
+      "timestamp": "12:59:16 pm",
+      "actor": "39@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-03",
+      "details": "Submitted Round 1: 0 WPM (0 correct words), 100% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111756281-c9es",
+      "timestamp": "12:59:16 pm",
+      "actor": "2@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-14",
+      "details": "Submitted Round 1: 0 WPM (0 correct words), 100% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111756250-37mr",
+      "timestamp": "12:59:16 pm",
+      "actor": "43@ft.in",
       "action": "SUBMIT_ATTEMPT",
       "target": "PC-02",
-      "details": "Submitted Round 1: 438 WPM, 2.9% Accuracy, Score 1270"
+      "details": "Submitted Round 1: 18 WPM (18 correct words), 100% Accuracy, Score 1800"
     },
     {
-      "id": "audit-1788630977221-gd45",
-      "timestamp": "11:26:17 PM",
-      "actor": "noreply@example.com",
+      "id": "audit-1789111756240-5vdm",
+      "timestamp": "12:59:16 pm",
+      "actor": "57@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-18",
+      "details": "Submitted Round 1: 0 WPM (0 correct words), 100% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111756224-hwvm",
+      "timestamp": "12:59:16 pm",
+      "actor": "48@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-06",
+      "details": "Submitted Round 1: 0 WPM (0 correct words), 100% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111756219-l1fk",
+      "timestamp": "12:59:16 pm",
+      "actor": "41@ft.in",
       "action": "SUBMIT_ATTEMPT",
       "target": "PC-01",
-      "details": "Submitted Round 1: 164 WPM, 8.5% Accuracy, Score 1394"
+      "details": "Submitted Round 1: 0 WPM (0 correct words), 100% Accuracy, Score 0"
     },
     {
-      "id": "audit-1788630957375-kd1p",
-      "timestamp": "11:25:57 PM",
+      "id": "audit-1789111756173-bx7i",
+      "timestamp": "12:59:16 pm",
+      "actor": "4@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-08",
+      "details": "Submitted Round 1: 0 WPM (0 correct words), 5.4% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111756155-rvi6",
+      "timestamp": "12:59:16 pm",
+      "actor": "19@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-22",
+      "details": "Submitted Round 1: 18 WPM (12 correct words), 100% Accuracy, Score 1800"
+    },
+    {
+      "id": "audit-1789111756142-avsh",
+      "timestamp": "12:59:16 pm",
+      "actor": "54@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-09",
+      "details": "Submitted Round 1: 23 WPM (18 correct words), 99.4% Accuracy, Score 2286"
+    },
+    {
+      "id": "audit-1789111756099-fgbd",
+      "timestamp": "12:59:16 pm",
+      "actor": "18@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-24",
+      "details": "Submitted Round 1: 0 WPM (0 correct words), 2% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111756094-7iv2",
+      "timestamp": "12:59:16 pm",
+      "actor": "12@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-21",
+      "details": "Submitted Round 1: 0 WPM (0 correct words), 100% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111756037-sn8p",
+      "timestamp": "12:59:16 pm",
+      "actor": "10@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-23",
+      "details": "Submitted Round 1: 0 WPM (0 correct words), 100% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111755799-tlms",
+      "timestamp": "12:59:15 pm",
+      "actor": "32@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-20",
+      "details": "Submitted Round 1: 20 WPM (8 correct words), 100% Accuracy, Score 2000"
+    },
+    {
+      "id": "audit-1789111755673-8ja0",
+      "timestamp": "12:59:15 pm",
+      "actor": "25@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-13",
+      "details": "Submitted Round 1: 0 WPM (0 correct words), 1.5% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111755653-xjin",
+      "timestamp": "12:59:15 pm",
+      "actor": "23@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-12",
+      "details": "Submitted Round 1: 0 WPM (0 correct words), 0.5% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111755642-d1v6",
+      "timestamp": "12:59:15 pm",
+      "actor": "37@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-05",
+      "details": "Submitted Round 1: 0 WPM (0 correct words), 50.5% Accuracy, Score 0"
+    },
+    {
+      "id": "audit-1789111746658-g25c",
+      "timestamp": "12:59:06 pm",
+      "actor": "5@ft.in",
+      "action": "ANTI_CHEAT_FLAGGED",
+      "target": "PC-07",
+      "details": "PASTE: Right-click context menu attempted. Station disqualified and excluded from official results."
+    },
+    {
+      "id": "audit-1789111695995-20no",
+      "timestamp": "12:58:15 pm",
       "actor": "SYSTEM",
       "action": "ROUND_BEGIN",
       "target": "ROUND_1",
       "details": "Round 1 typing phase started (60s)"
     },
     {
-      "id": "audit-1788630952344-8t33",
-      "timestamp": "11:25:52 PM",
-      "actor": "host",
+      "id": "audit-1789111690931-vxb7",
+      "timestamp": "12:58:10 pm",
+      "actor": "max@host.com",
       "action": "START_ROUND",
       "target": "ROUND_1",
       "details": "Initiating Round 1 with a 5s countdown"
     },
     {
-      "id": "audit-1788630865167-9dta",
-      "timestamp": "11:24:25 PM",
-      "actor": "host",
-      "action": "MARK_READY",
-      "target": "CONTEST",
-      "details": "Contest marked as ready to start."
-    },
-    {
-      "id": "audit-1788630809488-r4ds",
-      "timestamp": "11:23:29 PM",
-      "actor": "host",
+      "id": "audit-1789111384252-i4rb",
+      "timestamp": "12:53:04 pm",
+      "actor": "max@host.com",
       "action": "RESET_CONTEST",
       "target": "COMPETITION",
       "details": "Reset contest and all stations to clean state."
     },
     {
-      "id": "audit-1788630345329-bnxd",
-      "timestamp": "11:15:45 PM",
-      "actor": "contact@example.com",
-      "action": "VIOLATION_TRIGGERED",
-      "target": "PC-02",
-      "details": "RESTART_ATTEMPT: Manual Host Disqualification"
-    },
-    {
-      "id": "audit-1788630345329-yl70",
-      "timestamp": "11:15:45 PM",
-      "actor": "host",
-      "action": "DISQUALIFY_STATION",
-      "target": "PC-02",
-      "details": "Manual Host Disqualification"
-    },
-    {
-      "id": "audit-1788630242779-d1xo",
-      "timestamp": "11:14:02 PM",
+      "id": "audit-1789111324960-llia",
+      "timestamp": "12:52:04 pm",
       "actor": "SYSTEM",
       "action": "ROUND_COMPLETE",
       "target": "ROUND_2",
       "details": "Round 2 timer reached zero."
     },
     {
-      "id": "audit-1788630061293-viny",
-      "timestamp": "11:11:01 PM",
+      "id": "audit-1789111324380-75n9",
+      "timestamp": "12:52:04 pm",
+      "actor": "1@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-01",
+      "details": "Submitted Round 2: 2 WPM (6 correct words), 89.8% Accuracy, Score 180"
+    },
+    {
+      "id": "audit-1789111143598-sh09",
+      "timestamp": "12:49:03 pm",
       "actor": "SYSTEM",
       "action": "ROUND_BEGIN",
       "target": "ROUND_2",
       "details": "Round 2 typing phase started (180s)"
     },
     {
-      "id": "audit-1788630056263-3pbq",
-      "timestamp": "11:10:56 PM",
-      "actor": "host",
+      "id": "audit-1789111138582-2jf1",
+      "timestamp": "12:48:58 pm",
+      "actor": "max@host.com",
       "action": "START_ROUND",
       "target": "ROUND_2",
       "details": "Initiating Round 2 with a 5s countdown"
     },
     {
-      "id": "audit-1788630021890-cwqi",
-      "timestamp": "11:10:21 PM",
+      "id": "audit-1789111112775-lrmk",
+      "timestamp": "12:48:32 pm",
       "actor": "SYSTEM",
       "action": "ROUND_COMPLETE",
       "target": "ROUND_1",
       "details": "Round 1 timer reached zero."
     },
     {
-      "id": "audit-1788629961389-fm49",
-      "timestamp": "11:09:21 PM",
+      "id": "audit-1789111112646-m7im",
+      "timestamp": "12:48:32 pm",
+      "actor": "1@ft.in",
+      "action": "SUBMIT_ATTEMPT",
+      "target": "PC-01",
+      "details": "Submitted Round 1: 7 WPM (7 correct words), 68.8% Accuracy, Score 482"
+    },
+    {
+      "id": "audit-1789111052271-46a0",
+      "timestamp": "12:47:32 pm",
       "actor": "SYSTEM",
       "action": "ROUND_BEGIN",
       "target": "ROUND_1",
       "details": "Round 1 typing phase started (60s)"
     },
     {
-      "id": "audit-1788629956338-61g2",
-      "timestamp": "11:09:16 PM",
-      "actor": "host",
+      "id": "audit-1789111047242-5210",
+      "timestamp": "12:47:27 pm",
+      "actor": "max@host.com",
       "action": "START_ROUND",
       "target": "ROUND_1",
       "details": "Initiating Round 1 with a 5s countdown"
     },
     {
-      "id": "audit-1788629821393-nnv9",
-      "timestamp": "11:07:01 PM",
-      "actor": "host",
-      "action": "MARK_READY",
-      "target": "CONTEST",
-      "details": "Contest marked as ready to start."
-    },
-    {
-      "id": "audit-1788629664937-h8yw",
-      "timestamp": "11:04:24 PM",
-      "actor": "host",
+      "id": "audit-1789111026544-u2l8",
+      "timestamp": "12:47:06 pm",
+      "actor": "max@host.com",
       "action": "RESET_CONTEST",
       "target": "COMPETITION",
       "details": "Reset contest and all stations to clean state."
-    },
-    {
-      "id": "audit-1788629623365-owvl",
-      "timestamp": "11:03:43 PM",
-      "actor": "contact@example.com",
-      "action": "SUBMIT_ATTEMPT",
-      "target": "PC-01",
-      "details": "Submitted Round 2: 450 WPM, 3.2% Accuracy, Score 1440"
-    },
-    {
-      "id": "audit-1788629572883-8t22",
-      "timestamp": "11:02:52 PM",
-      "actor": "SYSTEM",
-      "action": "ROUND_BEGIN",
-      "target": "ROUND_2",
-      "details": "Round 2 typing phase started (180s)"
-    },
-    {
-      "id": "audit-1788629567843-sjax",
-      "timestamp": "11:02:47 PM",
-      "actor": "host",
-      "action": "START_ROUND",
-      "target": "ROUND_2",
-      "details": "Initiating Round 2 with a 5s countdown"
-    },
-    {
-      "id": "audit-1788629539606-vvm4",
-      "timestamp": "11:02:19 PM",
-      "actor": "host",
-      "action": "RESET_STATION_ATTEMPT",
-      "target": "PC-01",
-      "details": "Reset station attempt for contact@example.com"
-    },
-    {
-      "id": "audit-1788629537691-717b",
-      "timestamp": "11:02:17 PM",
-      "actor": "host",
-      "action": "RESET_STATION_ATTEMPT",
-      "target": "PC-02",
-      "details": "Reset station attempt for admin@example.com"
-    },
-    {
-      "id": "audit-1788629503260-u49g",
-      "timestamp": "11:01:43 PM",
-      "actor": "SYSTEM",
-      "action": "ROUND_COMPLETE",
-      "target": "ROUND_1",
-      "details": "Round 1 timer reached zero."
-    },
-    {
-      "id": "audit-1788629449604-kdv0",
-      "timestamp": "11:00:49 PM",
-      "actor": "host",
-      "action": "RESET_STATION_ATTEMPT",
-      "target": "PC-02",
-      "details": "Reset station attempt for admin@example.com"
-    },
-    {
-      "id": "audit-1788629442801-rfyr",
-      "timestamp": "11:00:42 PM",
-      "actor": "host",
-      "action": "RESTART_ROUND",
-      "target": "ROUND_1",
-      "details": "Restarted Round 1 with new passage \"Algorithms in Motion\""
-    },
-    {
-      "id": "audit-1788629416481-wfch",
-      "timestamp": "11:00:16 PM",
-      "actor": "host",
-      "action": "CALCULATE_QUALIFIERS",
-      "target": "TOP_2",
-      "details": "Selected 1 qualifiers for Round 2."
-    },
-    {
-      "id": "audit-1788629081598-9ffo",
-      "timestamp": "10:54:41 PM",
-      "actor": "SYSTEM",
-      "action": "CRASH_RECOVERY",
-      "target": "CONTEST",
-      "details": "Server restored from snapshot. Status: ROUND_1_COMPLETE"
-    },
-    {
-      "id": "audit-1788628677822-r8tl",
-      "timestamp": "10:47:57 PM",
-      "actor": "SYSTEM",
-      "action": "CRASH_RECOVERY",
-      "target": "CONTEST",
-      "details": "Server restored from snapshot. Status: ROUND_1_COMPLETE"
-    },
-    {
-      "id": "audit-1788628617143-ptdp",
-      "timestamp": "10:46:57 PM",
-      "actor": "SYSTEM",
-      "action": "CRASH_RECOVERY",
-      "target": "CONTEST",
-      "details": "Server restored from snapshot. Status: ROUND_1_COMPLETE"
-    },
-    {
-      "id": "audit-1788627655606-io8d",
-      "timestamp": "10:30:55 PM",
-      "actor": "SYSTEM",
-      "action": "CRASH_RECOVERY",
-      "target": "CONTEST",
-      "details": "Server restored from snapshot. Status: ROUND_1_COMPLETE"
-    },
-    {
-      "id": "audit-1788627620023-zxn1",
-      "timestamp": "10:30:20 PM",
-      "actor": "SYSTEM",
-      "action": "ROUND_COMPLETE",
-      "target": "ROUND_1",
-      "details": "Round 1 timer reached zero."
-    },
-    {
-      "id": "audit-1788627559601-fo9u",
-      "timestamp": "10:29:19 PM",
-      "actor": "SYSTEM",
-      "action": "ROUND_BEGIN",
-      "target": "ROUND_1",
-      "details": "Round 1 typing phase started (60s)"
-    },
-    {
-      "id": "audit-1788627554591-qvw2",
-      "timestamp": "10:29:14 PM",
-      "actor": "host",
-      "action": "START_ROUND",
-      "target": "ROUND_1",
-      "details": "Initiating Round 1 with a 5s countdown"
-    },
-    {
-      "id": "audit-1788627500340-a1js",
-      "timestamp": "10:28:20 PM",
-      "actor": "SYSTEM",
-      "action": "ROUND_BEGIN",
-      "target": "ROUND_1",
-      "details": "Round 1 typing phase started (60s)"
-    },
-    {
-      "id": "audit-1788627495315-qs0q",
-      "timestamp": "10:28:15 PM",
-      "actor": "host",
-      "action": "START_ROUND",
-      "target": "ROUND_1",
-      "details": "Initiating Round 1 with a 5s countdown"
-    },
-    {
-      "id": "audit-1788627491739-a0wa",
-      "timestamp": "10:28:11 PM",
-      "actor": "SYSTEM",
-      "action": "ROUND_BEGIN",
-      "target": "ROUND_2",
-      "details": "Round 2 typing phase started (180s)"
-    },
-    {
-      "id": "audit-1788627486700-6bz3",
-      "timestamp": "10:28:06 PM",
-      "actor": "host",
-      "action": "START_ROUND",
-      "target": "ROUND_2",
-      "details": "Initiating Round 2 with a 5s countdown"
-    },
-    {
-      "id": "audit-1788626959385-xcem",
-      "timestamp": "10:19:19 PM",
-      "actor": "SYSTEM",
-      "action": "ROUND_COMPLETE",
-      "target": "ROUND_1",
-      "details": "Round 1 timer reached zero."
-    },
-    {
-      "id": "audit-1788626911043-usyd",
-      "timestamp": "10:18:31 PM",
-      "actor": "contact@example.com",
-      "action": "SUBMIT_ATTEMPT",
-      "target": "PC-01",
-      "details": "Submitted Round 1: 338 WPM, 2.8% Accuracy, Score 946"
-    },
-    {
-      "id": "audit-1788626898917-9h0l",
-      "timestamp": "10:18:18 PM",
-      "actor": "SYSTEM",
-      "action": "ROUND_BEGIN",
-      "target": "ROUND_1",
-      "details": "Round 1 typing phase started (60s)"
-    },
-    {
-      "id": "audit-1788626893873-ftcl",
-      "timestamp": "10:18:13 PM",
-      "actor": "host",
-      "action": "START_ROUND",
-      "target": "ROUND_1",
-      "details": "Initiating Round 1 with a 5s countdown"
-    },
-    {
-      "id": "audit-1788626796035-1ljx",
-      "timestamp": "10:16:36 PM",
-      "actor": "host",
-      "action": "RESET_STATION_ATTEMPT",
-      "target": "PC-01",
-      "details": "Reset station attempt for contact@example.com"
-    },
-    {
-      "id": "audit-1788626701694-a6aj",
-      "timestamp": "10:15:01 PM",
-      "actor": "SYSTEM",
-      "action": "CRASH_RECOVERY",
-      "target": "CONTEST",
-      "details": "Server restored from snapshot. Status: ROUND_2_COMPLETE"
-    },
-    {
-      "id": "audit-1788626250908-raf2",
-      "timestamp": "10:07:30 PM",
-      "actor": "SYSTEM",
-      "action": "ROUND_COMPLETE",
-      "target": "ROUND_2",
-      "details": "Round 2 timer reached zero."
-    },
-    {
-      "id": "audit-1788626069399-1myb",
-      "timestamp": "10:04:29 PM",
-      "actor": "host",
-      "action": "START_ROUND",
-      "target": "ROUND_2",
-      "details": "Started Round 2 (180s) with passage \"Low Latency Networking & High Concurrency\""
-    },
-    {
-      "id": "audit-1788625814881-6wo4",
-      "timestamp": "10:00:14 PM",
-      "actor": "SYSTEM",
-      "action": "ROUND_COMPLETE",
-      "target": "ROUND_1",
-      "details": "Round 1 timer reached zero."
-    },
-    {
-      "id": "audit-1788625754412-6xt1",
-      "timestamp": "9:59:14 PM",
-      "actor": "host",
-      "action": "RESTART_ROUND",
-      "target": "ROUND_1",
-      "details": "Restarted Round 1 with new passage \"The Essence of Systems\""
-    },
-    {
-      "id": "audit-1788625742309-fp11",
-      "timestamp": "9:59:02 PM",
-      "actor": "SYSTEM",
-      "action": "ROUND_COMPLETE",
-      "target": "ROUND_1",
-      "details": "Round 1 timer reached zero."
-    },
-    {
-      "id": "audit-1788625723020-lco1",
-      "timestamp": "9:58:43 PM",
-      "actor": "admin@example.com",
-      "action": "SUBMIT_ATTEMPT",
-      "target": "PC-02",
-      "details": "Submitted Round 1: 182 WPM, 2.4% Accuracy, Score 437"
-    },
-    {
-      "id": "audit-1788625698131-giv3",
-      "timestamp": "9:58:18 PM",
-      "actor": "host",
-      "action": "RESET_STATION_ATTEMPT",
-      "target": "PC-02",
-      "details": "Reset station attempt for admin@example.com"
-    },
-    {
-      "id": "audit-1788625681923-nmyv",
-      "timestamp": "9:58:01 PM",
-      "actor": "host",
-      "action": "RESTART_ROUND",
-      "target": "ROUND_1",
-      "details": "Restarted Round 1 with new passage \"The Essence of Systems\""
-    },
-    {
-      "id": "audit-1788625404755-xvyp",
-      "timestamp": "9:53:24 PM",
-      "actor": "SYSTEM",
-      "action": "ROUND_COMPLETE",
-      "target": "ROUND_1",
-      "details": "Round 1 timer reached zero."
-    },
-    {
-      "id": "audit-1788625357019-7sqg",
-      "timestamp": "9:52:37 PM",
-      "actor": "contact@example.com",
-      "action": "VIOLATION_TRIGGERED",
-      "target": "PC-01",
-      "details": "TAB_SWITCH: Participant switched tab or minimized window"
-    },
-    {
-      "id": "audit-1788625356708-ttvb",
-      "timestamp": "9:52:36 PM",
-      "actor": "SYSTEM",
-      "action": "AUTO_DISQUALIFY",
-      "target": "PC-01",
-      "details": "Station disqualified due to WINDOW_BLUR security violation."
-    },
-    {
-      "id": "audit-1788625356708-r8s1",
-      "timestamp": "9:52:36 PM",
-      "actor": "contact@example.com",
-      "action": "VIOLATION_TRIGGERED",
-      "target": "PC-01",
-      "details": "WINDOW_BLUR: Participant unfocused typing window"
-    },
-    {
-      "id": "audit-1788625346778-9l4z",
-      "timestamp": "9:52:26 PM",
-      "actor": "admin@example.com",
-      "action": "VIOLATION_TRIGGERED",
-      "target": "PC-02",
-      "details": "TAB_SWITCH: Participant switched tab or minimized window"
-    },
-    {
-      "id": "audit-1788625346436-q1sz",
-      "timestamp": "9:52:26 PM",
-      "actor": "SYSTEM",
-      "action": "AUTO_DISQUALIFY",
-      "target": "PC-02",
-      "details": "Station disqualified due to WINDOW_BLUR security violation."
-    },
-    {
-      "id": "audit-1788625346436-hgyv",
-      "timestamp": "9:52:26 PM",
-      "actor": "admin@example.com",
-      "action": "VIOLATION_TRIGGERED",
-      "target": "PC-02",
-      "details": "WINDOW_BLUR: Participant unfocused typing window"
-    },
-    {
-      "id": "audit-1788625344359-fspk",
-      "timestamp": "9:52:24 PM",
-      "actor": "host",
-      "action": "RESTART_ROUND",
-      "target": "ROUND_1",
-      "details": "Restarted Round 1 with new passage \"Algorithms in Motion\""
-    },
-    {
-      "id": "audit-1788625162477-qrbu",
-      "timestamp": "9:49:22 PM",
-      "actor": "SYSTEM",
-      "action": "ROUND_COMPLETE",
-      "target": "ROUND_1",
-      "details": "Round 1 timer reached zero."
-    },
-    {
-      "id": "audit-1788625102207-umnf",
-      "timestamp": "9:48:22 PM",
-      "actor": "host",
-      "action": "START_ROUND",
-      "target": "ROUND_1",
-      "details": "Started Round 1 (60s) with passage \"Algorithms in Motion\""
-    },
-    {
-      "id": "audit-1788625094008-v0hb",
-      "timestamp": "9:48:14 PM",
-      "actor": "host",
-      "action": "TOGGLE_LOCK",
-      "target": "CONTEST",
-      "details": "Contest configuration LOCKED"
-    },
-    {
-      "id": "audit-1788625042474-96wv",
-      "timestamp": "9:47:22 PM",
-      "actor": "host",
-      "action": "MARK_READY",
-      "target": "CONTEST",
-      "details": "Contest marked as ready to start."
-    },
-    {
-      "id": "audit-1788624402065-166i",
-      "timestamp": "9:36:42 PM",
-      "actor": "host",
-      "action": "RESET_CONTEST",
-      "target": "COMPETITION",
-      "details": "Reset contest and all stations to clean state."
-    },
-    {
-      "id": "audit-1788624380135-825o",
-      "timestamp": "9:36:20 PM",
-      "actor": "host",
-      "action": "START_ROUND",
-      "target": "ROUND_1",
-      "details": "Started Round 1 (60s) with passage \"Algorithms in Motion\""
-    },
-    {
-      "id": "audit-1788624378051-x5ev",
-      "timestamp": "9:36:18 PM",
-      "actor": "host",
-      "action": "RESTART_ROUND",
-      "target": "ROUND_1",
-      "details": "Restarted Round 1 with new passage \"Algorithms in Motion\""
-    },
-    {
-      "id": "audit-1788624366505-hp6g",
-      "timestamp": "9:36:06 PM",
-      "actor": "SYSTEM",
-      "action": "ROUND_COMPLETE",
-      "target": "ROUND_1",
-      "details": "Round 1 timer reached zero."
-    },
-    {
-      "id": "audit-1788624306036-hzzc",
-      "timestamp": "9:35:06 PM",
-      "actor": "host",
-      "action": "START_ROUND",
-      "target": "ROUND_1",
-      "details": "Started Round 1 (60s) with passage \"The Essence of Systems\""
-    },
-    {
-      "id": "audit-1788624162188-ghng",
-      "timestamp": "9:32:42 PM",
-      "actor": "host",
-      "action": "MARK_READY",
-      "target": "CONTEST",
-      "details": "Contest marked as ready to start."
-    },
-    {
-      "id": "audit-1788623619305-t9wt",
-      "timestamp": "9:23:39 PM",
-      "actor": "SYSTEM",
-      "action": "CRASH_RECOVERY",
-      "target": "CONTEST",
-      "details": "Server restored from snapshot. Status: READY"
-    },
-    {
-      "id": "audit-1788623520965-7jvd",
-      "timestamp": "9:22:00 PM",
-      "actor": "SYSTEM",
-      "action": "CRASH_RECOVERY",
-      "target": "CONTEST",
-      "details": "Server restored from snapshot. Status: READY"
-    },
-    {
-      "id": "audit-1788623496801-ag1d",
-      "timestamp": "9:21:36 PM",
-      "actor": "SYSTEM",
-      "action": "CRASH_RECOVERY",
-      "target": "CONTEST",
-      "details": "Server restored from snapshot. Status: READY"
-    },
-    {
-      "id": "audit-1788623485805-8iqj",
-      "timestamp": "9:21:25 PM",
-      "actor": "SYSTEM",
-      "action": "CRASH_RECOVERY",
-      "target": "CONTEST",
-      "details": "Server restored from snapshot. Status: READY"
-    },
-    {
-      "id": "audit-1788623475592-oiaz",
-      "timestamp": "9:21:15 PM",
-      "actor": "SYSTEM",
-      "action": "CRASH_RECOVERY",
-      "target": "CONTEST",
-      "details": "Server restored from snapshot. Status: READY"
-    },
-    {
-      "id": "audit-1788622173900-oa0k",
-      "timestamp": "8:59:33 PM",
-      "actor": "SYSTEM",
-      "action": "CRASH_RECOVERY",
-      "target": "CONTEST",
-      "details": "Server restored from snapshot. Status: READY"
     }
   ],
   "room": {
-    "roomPin": "592905",
-    "competitionName": "Blitzkrieg - College LAN Championship",
+    "roomPin": "000000",
+    "competitionName": "Blitzkrieg Competition",
     "whitelistedEmails": [
-      "admin@example.com",
-      "support@example.com",
-      "info@example.com",
-      "hello@example.com",
-      "contact@example.com",
-      "noreply@example.com",
-      "dev@example.com",
-      "test@example.com",
-      "user@example.com",
-      "team@example.com"
+      "bibiiiiiii67@gmail.com",
+      "vedavyasps7@gmail.com",
+      "msharikrishnan496@gmail.com",
+      "ananda.cea2226@saintgits.org",
+      "arjungopakumar35@gmail.com",
+      "epabhinand6@gmail.com",
+      "joetom2259@gmail.com",
+      "onesirgaming509@gmail.com",
+      "vallavasserylenin@gmail.com",
+      "uzumakionesir@gmail.com",
+      "athulathulathu47@gmail.com",
+      "niranjansnair5043@gmail.com",
+      "adwaiths183@gmail.com",
+      "sajipadavila@gmail.com",
+      "abhijithsajeevan03@gmail.com",
+      "thejusau@gmail.com",
+      "arunjoy300@gmail.com",
+      "ashajumone@gmail.com",
+      "hannamaria897@gmail.com",
+      "jeswinjacobkallani@gmail.com",
+      "jjthekkepalackal@gmail.com",
+      "sree192006@gmail.com",
+      "mebymanoj31@gmail.com",
+      "seemaanil981@gmail.com",
+      "annannajose591@gmail.com",
+      "riya.sicil04@gmail.com"
     ],
     "joinedParticipants": [
       {
-        "email": "noreply@example.com",
+        "email": "jjthekkepalackal@gmail.com",
+        "name": "JInson Jose",
         "stationCode": "PC-01",
-        "joinedAt": "2026-09-05T17:54:47.586Z"
+        "joinedAt": "2026-09-11T07:48:22.341Z"
       },
       {
-        "email": "hello@example.com",
+        "email": "ashajumone@gmail.com",
+        "name": "Albin Shajumone",
         "stationCode": "PC-02",
-        "joinedAt": "2026-09-05T17:55:06.974Z"
+        "joinedAt": "2026-09-11T07:48:37.900Z"
       },
       {
-        "email": "contact@example.com",
+        "email": "sree192006@gmail.com",
+        "name": "sreedev sreejeh",
         "stationCode": "PC-03",
-        "joinedAt": "2026-09-05T17:55:38.557Z"
+        "joinedAt": "2026-09-11T07:49:27.756Z"
+      },
+      {
+        "email": "onesirgaming509@gmail.com",
+        "name": "vijay thrideep",
+        "stationCode": "PC-04",
+        "joinedAt": "2026-09-11T07:49:39.088Z"
+      },
+      {
+        "email": "hannamaria897@gmail.com",
+        "name": "Hanna Maria Shibu",
+        "stationCode": "PC-05",
+        "joinedAt": "2026-09-11T07:49:52.976Z"
+      },
+      {
+        "email": "jeswinjacobkallani@gmail.com",
+        "name": "jeswin jacob",
+        "stationCode": "PC-06",
+        "joinedAt": "2026-09-11T07:49:53.159Z"
+      },
+      {
+        "email": "niranjansnair5043@gmail.com",
+        "name": "niranjan s nair",
+        "stationCode": "PC-07",
+        "joinedAt": "2026-09-11T07:49:55.030Z"
+      },
+      {
+        "email": "uzumakionesir@gmail.com",
+        "name": "vinay thrideep",
+        "stationCode": "PC-08",
+        "joinedAt": "2026-09-11T07:49:56.608Z"
+      },
+      {
+        "email": "athulathulathu47@gmail.com",
+        "name": "Athul K K",
+        "stationCode": "PC-09",
+        "joinedAt": "2026-09-11T07:50:00.712Z"
+      },
+      {
+        "email": "seemaanil981@gmail.com",
+        "name": "ARYA  LAKSHMY O A",
+        "stationCode": "PC-10",
+        "joinedAt": "2026-09-11T07:50:08.801Z"
+      },
+      {
+        "email": "abhijithsajeevan03@gmail.com",
+        "name": "ABHIJITH",
+        "stationCode": "PC-11",
+        "joinedAt": "2026-09-11T07:50:12.232Z"
+      },
+      {
+        "email": "annannajose591@gmail.com",
+        "name": "Ann Anna Jose",
+        "stationCode": "PC-12",
+        "joinedAt": "2026-09-11T07:50:16.330Z"
+      },
+      {
+        "email": "joetom2259@gmail.com",
+        "name": "Joe Tom",
+        "stationCode": "PC-13",
+        "joinedAt": "2026-09-11T07:50:18.293Z"
+      },
+      {
+        "email": "arunjoy300@gmail.com",
+        "name": "ARUN JOY",
+        "stationCode": "PC-14",
+        "joinedAt": "2026-09-11T07:50:26.454Z"
+      },
+      {
+        "email": "thejusau@gmail.com",
+        "name": "Thejus AU",
+        "stationCode": "PC-15",
+        "joinedAt": "2026-09-11T07:50:26.511Z"
+      },
+      {
+        "email": "mebymanoj31@gmail.com",
+        "name": "Meby Manoj",
+        "stationCode": "PC-16",
+        "joinedAt": "2026-09-11T07:50:26.964Z"
+      },
+      {
+        "email": "ananda.cea2226@saintgits.org",
+        "name": "anand anilkumar",
+        "stationCode": "PC-17",
+        "joinedAt": "2026-09-11T07:50:31.648Z"
+      },
+      {
+        "email": "vedavyasps7@gmail.com",
+        "name": "VEDAVYAS P S",
+        "stationCode": "PC-18",
+        "joinedAt": "2026-09-11T07:50:36.941Z"
+      },
+      {
+        "email": "arjungopakumar35@gmail.com",
+        "name": "arjun gopakumar",
+        "stationCode": "PC-19",
+        "joinedAt": "2026-09-11T07:50:53.551Z"
+      },
+      {
+        "email": "bibiiiiiii67@gmail.com",
+        "name": "karthik k anoj",
+        "stationCode": "PC-20",
+        "joinedAt": "2026-09-11T07:51:02.498Z"
+      },
+      {
+        "email": "msharikrishnan496@gmail.com",
+        "name": "harikrishnan",
+        "stationCode": "PC-21",
+        "joinedAt": "2026-09-11T07:51:18.828Z"
+      },
+      {
+        "email": "sajipadavila@gmail.com",
+        "name": "Albin Saji",
+        "stationCode": "PC-22",
+        "joinedAt": "2026-09-11T07:51:48.349Z"
+      },
+      {
+        "email": "adwaiths183@gmail.com",
+        "name": "Adwaith S",
+        "stationCode": "PC-23",
+        "joinedAt": "2026-09-11T07:52:05.712Z"
+      },
+      {
+        "email": "vallavasserylenin@gmail.com",
+        "name": "navaneethkrishna l",
+        "stationCode": "PC-24",
+        "joinedAt": "2026-09-11T07:52:22.927Z"
+      },
+      {
+        "email": "epabhinand6@gmail.com",
+        "name": "Abhinand E.P",
+        "stationCode": "PC-25",
+        "joinedAt": "2026-09-11T07:53:15.918Z"
       }
     ],
     "isOpen": true
-  }
+  },
+  "flaggedEmails": []
 }

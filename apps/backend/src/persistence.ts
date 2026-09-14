@@ -31,6 +31,7 @@ export interface PersistedStationRecord {
   hostname: string;
   status: StationStatus;
   email: string | null;
+  name?: string | null;
   activeSession: string | null;
   lastHeartbeatAt: string | null; // ISO string
   wpm: number | null;
@@ -47,6 +48,7 @@ export interface PersistedSnapshot {
   incidents: IncidentReport[];
   auditLogs: AuditLogEntry[];
   room: PersistedRoomState | null;
+  flaggedEmails?: string[];
 }
 
 // ─── Configuration ──────────────────────────────────────────────────

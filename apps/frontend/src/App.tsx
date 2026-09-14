@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import type { AuditLogEntry, AuthUser, ContestSnapshot, IncidentReport, LoginResponse, RoomSnapshot, StationSnapshot, StationStatus } from "@blitzkrieg/shared";
 import { SystemCheck } from "./components/SystemCheck";
@@ -26,6 +26,7 @@ const fallbackSnapshot: ContestSnapshot = {
   incidents: [],
   auditLogs: [],
   stations: [],
+  ingestedEmails: [],
   room: null
 };
 
@@ -113,93 +114,191 @@ function App() {
 
 // ─── Login Screen ───────────────────────────────────────────────────
 
+const ALLOWED_ADMIN_EMAILS = new Set([
+  "max@host.com",
+  "lec@host.com",
+  "kimi@host.com"
+]);
+
+function isAdminEmail(emailStr: string): boolean {
+  const lower = emailStr.trim().toLowerCase();
+  return ALLOWED_ADMIN_EMAILS.has(lower) || (lower.includes("@") && lower.endsWith("@host.com"));
+}
+
 function LoginScreen({ onLogin }: { onLogin: (session: SessionState) => void }) {
   const [mode, setMode] = useState<"host" | "participant">("participant");
-  const [username, setUsername] = useState("host");
-  const [password, setPassword] = useState("host123");
+  const [hostEmail, setHostEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
-  const [roomPin, setRoomPin] = useState("");
+  const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  function transitionToHost() {
+    setMode("host");
+    setHostEmail("");
+    setPassword("");
+    setError(null);
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+
+    if (mode === "participant") {
+      const trimmedEmail = email.trim();
+      const trimmedName = name.trim();
+
+      // If an admin email was entered in either field, immediately transition to host authentication
+      if (isAdminEmail(trimmedEmail) || isAdminEmail(trimmedName)) {
+        transitionToHost();
+        return;
+      }
+
+      if (!trimmedName) {
+        setError("Please enter your full name.");
+        return;
+      }
+      if (!trimmedEmail) {
+        setError("Please enter your registered email.");
+        return;
+      }
+    } else {
+      const trimmedHost = hostEmail.trim();
+      if (!trimmedHost) {
+        setError("Please enter host email.");
+        return;
+      }
+      if (!password) {
+        setError("Please enter host password.");
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     const body: Record<string, string> = mode === "host"
-      ? { username, password }
-      : { email: email.trim(), roomPin: roomPin.trim() };
+      ? { email: hostEmail.trim(), password }
+      : { email: email.trim(), name: name.trim() };
 
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
 
-    const data = await response.json();
-    setIsSubmitting(false);
+      const data = await response.json();
+      setIsSubmitting(false);
 
-    if (!response.ok) {
-      setError(data.message ?? "Login failed");
-      return;
+      if (!response.ok) {
+        if (mode === "participant" && (data.message?.includes("Host accounts") || data.message?.includes("host access"))) {
+          transitionToHost();
+          return;
+        }
+        setError(data.message ?? "Login failed");
+        return;
+      }
+
+      const session = data as LoginResponse;
+      localStorage.setItem(authStorageKey, JSON.stringify(session));
+      onLogin(session);
+    } catch {
+      setIsSubmitting(false);
+      setError("Network error connecting to authentication service.");
     }
-
-    const session = data as LoginResponse;
-    localStorage.setItem(authStorageKey, JSON.stringify(session));
-    onLogin(session);
   }
 
   return (
     <main className="auth-shell">
-      <form className="login-panel" onSubmit={handleSubmit}>
+      <form className="login-panel" onSubmit={handleSubmit} noValidate>
         <div>
-          <p className="eyebrow">Blitzkrieg Access</p>
+          <p className="eyebrow">{mode === "host" ? "Host Access" : "Blitzkrieg Access"}</p>
           <h1>{mode === "host" ? "Host Control Console" : "Competition Login"}</h1>
         </div>
 
         {mode === "host" ? (
           <>
             <label>
-              Username
-              <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" />
+              Host Email
+              <input
+                value={hostEmail}
+                onChange={(e) => setHostEmail(e.target.value)}
+                type="email"
+                placeholder="Enter host email (e.g. max@host.com)"
+                autoComplete="email"
+                required
+                autoFocus
+              />
             </label>
             <label>
               Password
-              <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" autoComplete="current-password" />
+              <input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type="password"
+                placeholder="Enter host password"
+                autoComplete="current-password"
+                required
+              />
             </label>
           </>
         ) : (
           <>
             <label>
-              Email
-              <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="you@college.edu" autoComplete="email" />
+              Your Full Name
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Lewis Hamilton"
+                autoComplete="name"
+                required
+              />
             </label>
             <label>
-              Room PIN
-              <input value={roomPin} onChange={(e) => setRoomPin(e.target.value)} placeholder="6-digit PIN from host" maxLength={6} inputMode="numeric" autoComplete="off" />
+              Registered Email
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onBlur={(e) => {
+                  if (isAdminEmail(e.target.value)) {
+                    transitionToHost();
+                  }
+                }}
+                type="email"
+                placeholder="you@college.edu"
+                autoComplete="email"
+                required
+              />
             </label>
           </>
         )}
 
         {error ? <p className="form-error">{error}</p> : null}
         <button type="submit" className="button button-primary" disabled={isSubmitting}>
-          {isSubmitting ? "Authenticating..." : "Enter Platform"}
+          {isSubmitting ? "Authenticating..." : (mode === "host" ? "Enter Host Console" : "Enter Contest & Allot PC")}
         </button>
         {mode === "participant" ? (
-          <p className="hint">Enter the email registered by the host and the Room PIN displayed on the board.</p>
+          <p className="hint">Workstation will be allotted automatically upon login. Enter your registered email.</p>
         ) : (
-          <p className="hint">Host credentials required.</p>
+          <p className="hint">Authorized host accounts: max@host.com, lec@host.com, kimi@host.com</p>
         )}
       </form>
 
-      <button
-        type="button"
-        className="subtle-mode-toggle"
-        onClick={() => setMode(mode === "participant" ? "host" : "participant")}
-      >
-        {mode === "participant" ? "Admin Access" : "Return to Participant Login"}
-      </button>
+      {mode === "host" && (
+        <button
+          type="button"
+          className="subtle-mode-toggle"
+          onClick={() => {
+            setMode("participant");
+            setEmail("");
+            setName("");
+            setError(null);
+          }}
+        >
+          ← Return to Participant Login
+        </button>
+      )}
     </main>
   );
 }
@@ -210,15 +309,36 @@ function HostDashboard({ session, snapshot, onLogout }: { session: SessionState;
   const [managingStation, setManagingStation] = useState<StationSnapshot | null>(null);
   const [startWarningRound, setStartWarningRound] = useState<1 | 2 | null>(null);
   const [unreadyCount, setUnreadyCount] = useState(0);
-  const showSetup = snapshot.status === "SETUP" || (snapshot.status === "READY" && !snapshot.room);
+  const [showIngestionModal, setShowIngestionModal] = useState(false);
+  const [showFinalizeModal, setShowFinalizeModal] = useState(false);
+
+  const isRound2Phase =
+    snapshot.round === 2 ||
+    snapshot.status === "STARTING_ROUND_2" ||
+    snapshot.status === "ROUND_2" ||
+    snapshot.status === "ROUND_2_COMPLETE" ||
+    snapshot.status === "QUALIFICATION";
 
   const leaders = useMemo(
-    () =>
-      snapshot.stations
-        .filter((s) => s.score !== null && s.score !== undefined)
-        .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
-        .slice(0, 10),
-    [snapshot.stations]
+    () => {
+      const flaggedSet = new Set(snapshot.flaggedEmails ?? []);
+      let list = snapshot.stations.filter((s) => {
+        if (!s.email || s.score === null || s.score === undefined) return false;
+        if (s.status === "DISQUALIFIED") return false;
+        if (flaggedSet.has(s.email)) return false;
+        return true;
+      });
+
+      // In Round 2 phase or when finalized, exclude participants who did not qualify for Round 2
+      if (snapshot.round === 2 || snapshot.status === "ROUND_2_COMPLETE" || snapshot.status === "FINALIZED") {
+        if (snapshot.qualifiers && snapshot.qualifiers.length > 0) {
+          list = list.filter((s) => snapshot.qualifiers.includes(s.email ?? ""));
+        }
+      }
+
+      return list.sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 10);
+    },
+    [snapshot.stations, snapshot.round, snapshot.status, snapshot.qualifiers, snapshot.flaggedEmails]
   );
 
   async function handleStartRound(round: 1 | 2) {
@@ -266,7 +386,6 @@ function HostDashboard({ session, snapshot, onLogout }: { session: SessionState;
   }
 
   async function handleFinalizeContest() {
-    if (!confirm("Are you sure you want to finalize the contest? Results will be officially frozen.")) return;
     await fetch("/api/contest/finalize", {
       method: "POST",
       headers: { Authorization: `Bearer ${session.token}` }
@@ -349,30 +468,6 @@ function HostDashboard({ session, snapshot, onLogout }: { session: SessionState;
     }).catch(() => undefined);
   }
 
-  if (showSetup) {
-    return (
-      <main className="app-shell">
-        <section className="command-bar" aria-label="Host command bar">
-          <div>
-            <p className="eyebrow">Host Control Console</p>
-            <h1>Create Competition</h1>
-          </div>
-          <div />
-          <div className="actions">
-            <button type="button" className="button button-secondary" onClick={handleSimulateRehearsal} title="Run mock competition simulation">
-              Run Rehearsal
-            </button>
-            <button type="button" className="icon-button" onClick={onLogout} title={`Logout ${session.user.username}`}>
-              Exit
-            </button>
-          </div>
-        </section>
-
-        <RoomSetup token={session.token} room={snapshot.room} />
-      </main>
-    );
-  }
-
   return (
     <main className="app-shell">
       <section className="command-bar" aria-label="Host command bar">
@@ -385,6 +480,15 @@ function HostDashboard({ session, snapshot, onLogout }: { session: SessionState;
           <strong>{formatTime(snapshot.remainingSeconds)}</strong>
         </div>
         <div className="actions">
+          <button
+            type="button"
+            className="button button-secondary button-ingest"
+            onClick={() => setShowIngestionModal(true)}
+            title="Ingest participant emails and manage PC allotment"
+          >
+            📧 Ingest Emails ({snapshot.ingestedEmails?.length ?? 0})
+          </button>
+
           <button type="button" className="button button-secondary" onClick={handleToggleLock}>
             {snapshot.isLocked ? "Unlock" : "Lock Contest"}
           </button>
@@ -395,7 +499,15 @@ function HostDashboard({ session, snapshot, onLogout }: { session: SessionState;
             </button>
           ) : null}
 
-          {snapshot.status === "QUALIFICATION" || snapshot.status === "ROUND_1_COMPLETE" ? (
+          {snapshot.status === "ROUND_2_COMPLETE" ? (
+            <button type="button" className="button button-primary" onClick={() => setShowFinalizeModal(true)}>
+              🏆 Finalize Results
+            </button>
+          ) : snapshot.status === "FINALIZED" ? (
+            <button type="button" className="button button-primary" onClick={() => setShowFinalizeModal(true)}>
+              🏆 View Final Standings
+            </button>
+          ) : snapshot.status === "QUALIFICATION" || snapshot.status === "ROUND_1_COMPLETE" ? (
             <button type="button" className="button button-primary" onClick={() => handleStartRound(2)}>
               Start Round 2
             </button>
@@ -405,9 +517,35 @@ function HostDashboard({ session, snapshot, onLogout }: { session: SessionState;
             </button>
           )}
 
-          <button type="button" className="button button-secondary" onClick={() => handleRestartRound(1)} title="Allow all participants to retake Round 1 with a fresh passage">
-            Restart Round 1
-          </button>
+          {isRound2Phase ? (
+            <>
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={() => handleRestartRound(2)}
+                title="Allow all qualified participants to retake Round 2 with a fresh passage"
+              >
+                🔄 Restart Round 2
+              </button>
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={() => handleRestartRound(1)}
+                title="Allow all participants to retake Round 1 with a fresh passage"
+              >
+                Restart Round 1
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              className="button button-secondary"
+              onClick={() => handleRestartRound(1)}
+              title="Allow all participants to retake Round 1 with a fresh passage"
+            >
+              🔄 Restart Round 1
+            </button>
+          )}
 
           <button type="button" className="button button-secondary" onClick={handleResetContest} title="Reset everything to clean SETUP state">
             Reset State
@@ -421,17 +559,48 @@ function HostDashboard({ session, snapshot, onLogout }: { session: SessionState;
             Export CSV
           </button>
 
-          {snapshot.status === "ROUND_2_COMPLETE" ? (
-            <button type="button" className="button button-primary" onClick={handleFinalizeContest}>
-              Finalize Results
-            </button>
-          ) : null}
+          <button type="button" className="button button-secondary" onClick={handleSimulateRehearsal} title="Run mock competition simulation">
+            Rehearsal
+          </button>
 
           <button type="button" className="icon-button" onClick={onLogout} title={`Logout ${session.user.username}`}>
             Exit
           </button>
         </div>
       </section>
+
+      {snapshot.status === "FINALIZED" ? (
+        <div className="finalized-banner">
+          <div className="finalized-banner-content">
+            <strong>🏆 Competition Finalized & Standings Frozen</strong>
+            <span>Official rankings are frozen. Disqualified participants from Round 1 have been excluded from the results.</span>
+          </div>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <button type="button" className="button button-primary" onClick={() => setShowFinalizeModal(true)}>
+              🏆 View Official Podium & Results
+            </button>
+            <button type="button" className="button button-secondary" onClick={handleExportCsv}>
+              📥 Export Official CSV
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {(!snapshot.ingestedEmails || snapshot.ingestedEmails.length === 0) ? (
+        <div className="ingest-banner">
+          <div className="ingest-banner-content">
+            <strong>⚡ Participant Email Ingestion Required</strong>
+            <span>Add participant emails to allow contestants to log in. Workstations (PC-01, PC-02...) are automatically allotted upon login.</span>
+          </div>
+          <button
+            type="button"
+            className="button button-primary"
+            onClick={() => setShowIngestionModal(true)}
+          >
+            Ingest Emails
+          </button>
+        </div>
+      ) : null}
 
       <section className="metrics-grid" aria-label="Contest metrics">
         <Metric label="Connected" value={snapshot.connectedStations} />
@@ -487,7 +656,7 @@ function HostDashboard({ session, snapshot, onLogout }: { session: SessionState;
               </div>
 
               <div className="modal-details">
-                <div><strong>Assigned Participant:</strong> {managingStation.email ?? "Unassigned"}</div>
+                <div><strong>Assigned Participant:</strong> {managingStation.name ? `${managingStation.name} (${managingStation.email})` : (managingStation.email ?? "Unassigned")}</div>
                 <div><strong>Current Status:</strong> {statusLabels[managingStation.status]}</div>
                 {managingStation.score !== null ? (
                   <div><strong>Recorded Performance:</strong> {managingStation.score} pts ({managingStation.wpm} WPM @ {managingStation.accuracy}% Acc)</div>
@@ -592,9 +761,13 @@ function HostDashboard({ session, snapshot, onLogout }: { session: SessionState;
                 leaders.map((st, index) => (
                   <div className="leader-row" key={st.stationCode}>
                     <span className="rank">{index + 1}</span>
-                    <div>
-                      <strong>{st.email}</strong>
-                      <span>{st.stationCode} • {st.wpm} WPM ({st.accuracy}%)</span>
+                    <div className="leader-info">
+                      <strong className="leader-name">{st.name || st.email}</strong>
+                      <span className="leader-meta">
+                        <span className="station-code-inline">{st.stationCode}</span>
+                        {st.name ? <span className="leader-email">{st.email}</span> : null}
+                        <span>{st.wpm} WPM ({st.accuracy}%)</span>
+                      </span>
                     </div>
                     <span className="score">{st.score}</span>
                   </div>
@@ -609,15 +782,18 @@ function HostDashboard({ session, snapshot, onLogout }: { session: SessionState;
               {snapshot.incidents.length === 0 ? (
                 <p className="hint">No violations recorded.</p>
               ) : (
-                snapshot.incidents.slice(0, 4).map((inc: IncidentReport) => (
-                  <div className="incident" key={inc.id}>
-                    <div>
-                      <span className="incident-badge">{inc.type}</span>
-                      <strong>{inc.email} ({inc.stationCode})</strong>
+                snapshot.incidents.slice(0, 4).map((inc: IncidentReport) => {
+                  const station = snapshot.stations.find((s) => s.stationCode === inc.stationCode);
+                  return (
+                    <div className="incident" key={inc.id}>
+                      <div>
+                        <span className="incident-badge">{inc.type}</span>
+                        <strong>{station?.name ? `${station.name} (${inc.stationCode})` : `${inc.email} (${inc.stationCode})`}</strong>
+                      </div>
+                      <span>{inc.details} • {inc.timestamp}</span>
                     </div>
-                    <span>{inc.details} • {inc.timestamp}</span>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </section>
@@ -634,212 +810,509 @@ function HostDashboard({ session, snapshot, onLogout }: { session: SessionState;
             </div>
           </section>
 
-          {snapshot.room ? (
-            <section>
-              <p className="eyebrow">Room Info</p>
-              <div className="room-info-card">
-                <div><strong>PIN:</strong> <span className="room-pin-inline">{snapshot.room.roomPin}</span></div>
-                <div><strong>Joined:</strong> {snapshot.room.joinedParticipants.length} / {snapshot.room.totalInvited}</div>
-                <div><strong>Status:</strong> {snapshot.room.isOpen ? "Open" : "Closed"}</div>
-              </div>
-            </section>
-          ) : null}
+          <section>
+            <p className="eyebrow">Participant Ingestion & Stations</p>
+            <div className="room-info-card">
+              <div><strong>Ingested Emails:</strong> {snapshot.ingestedEmails?.length ?? 0}</div>
+              <div><strong>Active Workstations:</strong> {snapshot.stations.filter((s) => s.email).length}</div>
+              <div><strong>Allotment Mode:</strong> Auto-allotted on Login</div>
+            </div>
+            <button
+              type="button"
+              className="button button-secondary"
+              style={{ width: "100%", marginTop: "0.6rem" }}
+              onClick={() => setShowIngestionModal(true)}
+            >
+              Manage Email Ingestion
+            </button>
+          </section>
         </aside>
       </section>
+
+      <EmailIngestionModal
+        token={session.token}
+        isOpen={showIngestionModal}
+        onClose={() => setShowIngestionModal(false)}
+        stations={snapshot.stations}
+      />
+
+      {showFinalizeModal ? (
+        <FinalizeResultsModal
+          snapshot={snapshot}
+          onFinalize={handleFinalizeContest}
+          onExportCsv={handleExportCsv}
+          onClose={() => setShowFinalizeModal(false)}
+        />
+      ) : null}
     </main>
   );
 }
 
-// ─── Room Setup ─────────────────────────────────────────────────────
+// ─── Email Ingestion & Participant Roster Modal ─────────────────────
 
-function RoomSetup({ token, room }: { token: string; room: RoomSnapshot | null }) {
-  const [competitionName, setCompetitionName] = useState("Blitzkrieg - College LAN Championship");
-  const [emailInput, setEmailInput] = useState("");
-  const [bulkEmails, setBulkEmails] = useState("");
-  const [isCreating, setIsCreating] = useState(false);
-  const [addError, setAddError] = useState<string | null>(null);
+function EmailIngestionModal({
+  token,
+  isOpen,
+  onClose,
+  stations
+}: {
+  token: string;
+  isOpen: boolean;
+  onClose: () => void;
+  stations: StationSnapshot[];
+}) {
+  const [bulkText, setBulkText] = useState("");
+  const [singleEmail, setSingleEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [participants, setParticipants] = useState<any[]>([]);
+  const [filterQuery, setFilterQuery] = useState("");
   const [histories, setHistories] = useState<any[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [activeTab, setActiveTab] = useState<"roster" | "ingest">("roster");
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (room) return;
+    if (!isOpen) return;
+    fetchParticipants();
     fetch("/api/history/qualifiers", { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => res.json())
-      .then(data => setHistories(data.histories ?? []))
+      .then((res) => res.json())
+      .then((data) => setHistories(data.histories ?? []))
       .catch(() => undefined);
-  }, [token, room]);
+  }, [isOpen, token]);
 
-  async function handleLoadHistory(filename: string) {
-    setIsCreating(true);
-    setAddError(null);
-    const res = await fetch("/api/room/create-from-history", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ filename })
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      setAddError(err.message ?? "Failed to load history");
+  async function fetchParticipants() {
+    try {
+      const res = await fetch("/api/participants", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setParticipants(data.participants ?? []);
+    } catch {
+      // ignore
     }
-    setIsCreating(false);
   }
 
-  async function handleCreateRoom() {
-    setIsCreating(true);
-    setAddError(null);
-
-    // Parse emails from the bulk textarea
-    const emails = bulkEmails
-      .split(/[\n,;]+/)
-      .map((e) => e.trim())
-      .filter((e) => e.length > 0 && e.includes("@"));
-
-    if (emails.length === 0) {
-      setAddError("Add at least one valid email address.");
-      setIsCreating(false);
+  async function handleIngest(emailsToIngest: string[]) {
+    if (emailsToIngest.length === 0) {
+      setMessage({ text: "Please enter at least one valid email address.", type: "error" });
       return;
     }
+    setIsSubmitting(true);
+    setMessage(null);
 
-    const res = await fetch("/api/room/create", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ competitionName, emails })
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      setAddError(err.message ?? "Failed to create room");
+    try {
+      const res = await fetch("/api/participants/ingest", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ emails: emailsToIngest })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage({
+          text: `Successfully ingested ${data.added} new email(s). Total registered: ${data.total}.`,
+          type: "success"
+        });
+        setBulkText("");
+        setSingleEmail("");
+        fetchParticipants();
+        setActiveTab("roster");
+      } else {
+        if (res.status === 401) {
+          setMessage({
+            text: "Host session expired or invalidated. Please refresh the page or re-login as Host to continue.",
+            type: "error"
+          });
+          return;
+        }
+        setMessage({ text: data.message ?? "Failed to ingest emails", type: "error" });
+      }
+    } catch (err: any) {
+      setMessage({ text: err.message ?? "Error ingesting emails", type: "error" });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsCreating(false);
   }
 
-  async function handleAddEmail() {
-    if (!emailInput.trim() || !emailInput.includes("@")) return;
-    setAddError(null);
+  function handleBulkSubmit() {
+    const emails = bulkText
+      .split(/[\n,;\s]+/)
+      .map((e) => e.trim().toLowerCase())
+      .filter((e) => e.length > 0 && e.includes("@"));
+    handleIngest(emails);
+  }
 
-    const res = await fetch("/api/room/add-participants", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ emails: [emailInput.trim()] })
-    });
-
-    if (res.ok) {
-      setEmailInput("");
-    } else {
-      const err = await res.json();
-      setAddError(err.message ?? "Failed to add participant");
+  function handleSingleSubmit() {
+    const email = singleEmail.trim().toLowerCase();
+    if (!email || !email.includes("@")) {
+      setMessage({ text: "Please enter a valid email address.", type: "error" });
+      return;
     }
+    handleIngest([email]);
+  }
+
+  function handleFileUpload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      if (text) {
+        setBulkText((prev) => (prev ? prev + "\n" + text : text));
+      }
+    };
+    reader.readAsText(file);
   }
 
   async function handleRemoveEmail(email: string) {
-    await fetch(`/api/room/participant/${encodeURIComponent(email)}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` }
-    }).catch(() => undefined);
+    try {
+      const res = await fetch(`/api/participants/${encodeURIComponent(email)}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        fetchParticipants();
+      } else {
+        const data = await res.json();
+        alert(data.message ?? "Cannot remove participant");
+      }
+    } catch {
+      // ignore
+    }
   }
 
-  // ─ Pre-room creation view ─
-  if (!room) {
-    return (
-      <section className="room-setup-panel">
-        <div>
-          <p className="eyebrow">Step 1 — Setup Competition Room</p>
-          <h2>Configure & Add Participants</h2>
-        </div>
-
-        <label>
-          Competition Name
-          <input value={competitionName} onChange={(e) => setCompetitionName(e.target.value)} placeholder="Blitzkrieg - College LAN Championship" />
-        </label>
-
-        <label>
-          Participant Emails <span className="hint">(one per line, or comma-separated)</span>
-          <textarea
-            className="email-textarea"
-            value={bulkEmails}
-            onChange={(e) => setBulkEmails(e.target.value)}
-            placeholder={"student1@college.edu\nstudent2@college.edu\nstudent3@college.edu"}
-            rows={8}
-          />
-        </label>
-
-        {addError ? <p className="form-error">{addError}</p> : null}
-
-        <button type="button" className="button button-primary" onClick={handleCreateRoom} disabled={isCreating}>
-          {isCreating ? "Creating Room..." : "Create Room & Generate PIN"}
-        </button>
-
-        {histories.length > 0 && (
-          <div className="history-section" style={{ marginTop: "2rem", paddingTop: "2rem", borderTop: "1px solid var(--iron)" }}>
-            <p className="eyebrow">Or Resume from History (Round 2)</p>
-            <div className="history-list" style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginTop: "1rem" }}>
-              {histories.map((h: any) => (
-                <button key={h.filename} type="button" className="button button-secondary" onClick={() => handleLoadHistory(h.filename)} disabled={isCreating} style={{ textAlign: "left", justifyContent: "flex-start" }}>
-                  Load "{h.competitionName}" ({h.count} Qualifiers) - {new Date(h.timestamp).toLocaleString()}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </section>
-    );
+  async function handleLoadHistory(filename: string) {
+    setIsSubmitting(true);
+    setMessage(null);
+    try {
+      const res = await fetch("/api/room/create-from-history", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ filename })
+      });
+      if (res.ok) {
+        setMessage({ text: "Round 2 qualifiers loaded successfully into workstation roster.", type: "success" });
+        fetchParticipants();
+        setActiveTab("roster");
+      } else {
+        const err = await res.json();
+        setMessage({ text: err.message ?? "Failed to load qualifiers from history", type: "error" });
+      }
+    } catch (err: any) {
+      setMessage({ text: err.message ?? "Error loading qualifiers", type: "error" });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
-  // ─ Post-room creation: waiting room ─
-  const joinedCount = room.joinedParticipants.length;
-  const totalCount = room.totalInvited;
+  if (!isOpen) return null;
+
+  const filteredList = participants.filter((p) =>
+    p.email.toLowerCase().includes(filterQuery.toLowerCase()) ||
+    (p.name && p.name.toLowerCase().includes(filterQuery.toLowerCase())) ||
+    (p.stationCode && p.stationCode.toLowerCase().includes(filterQuery.toLowerCase()))
+  );
+
+  const joinedCount = participants.filter((p) => p.joined).length;
 
   return (
-    <section className="room-setup-panel">
-      <div>
-        <p className="eyebrow">Step 2 — Share PIN & Wait for Participants</p>
-        <h2>{room.competitionName}</h2>
-      </div>
-
-      <div className="room-pin-display">
-        <span className="eyebrow">Room PIN — Share with participants</span>
-        <strong>{room.roomPin}</strong>
-      </div>
-
-      <div className="join-counter">
-        <span className="join-count">{joinedCount}</span>
-        <span className="join-total"> / {totalCount} joined</span>
-      </div>
-
-      {/* Live add participant */}
-      <div className="add-email-row">
-        <input
-          value={emailInput}
-          onChange={(e) => setEmailInput(e.target.value)}
-          placeholder="Add another email..."
-          type="email"
-          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddEmail(); } }}
-        />
-        <button type="button" className="button button-secondary" onClick={handleAddEmail}>Add</button>
-      </div>
-
-      {addError ? <p className="form-error">{addError}</p> : null}
-
-      {/* Participant list */}
-      <div className="email-list">
-        {room.joinedParticipants.map((p) => (
-          <div key={p.email} className="email-chip joined">
-            <span>{p.email}</span>
-            <span className="chip-station">{p.stationCode}</span>
-            <span className="chip-status">✓ Joined</span>
+    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="modal-card ingestion-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <div>
+            <p className="eyebrow">Participant Ingestion Console</p>
+            <h2>Workstation Roster & Email Whitelist</h2>
           </div>
-        ))}
+          <button type="button" className="icon-button" onClick={onClose} title="Close">✕</button>
+        </div>
+
+        <div className="ingestion-nav-tabs">
+          <button
+            type="button"
+            className={`ingestion-nav-tab ${activeTab === "roster" ? "active" : ""}`}
+            onClick={() => setActiveTab("roster")}
+          >
+            📋 Ingested Whitelist & Roster ({participants.length})
+          </button>
+          <button
+            type="button"
+            className={`ingestion-nav-tab ${activeTab === "ingest" ? "active" : ""}`}
+            onClick={() => setActiveTab("ingest")}
+          >
+            📥 Add / Bulk Ingest Emails
+          </button>
+        </div>
+
+        <div className="modal-details">
+          {message ? (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }} className={`ingest-msg ${message.type === "success" ? "success" : "form-error"}`}>
+              <span>{message.text}</span>
+              {activeTab === "ingest" && message.type === "success" ? (
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  style={{ fontSize: "0.75rem", padding: "0.25rem 0.6rem" }}
+                  onClick={() => setActiveTab("roster")}
+                >
+                  View Roster ({participants.length}) →
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+
+          {activeTab === "roster" ? (
+            <>
+              {/* Summary counters */}
+              <div className="ingest-stats-bar">
+                <div className="ingest-stat">
+                  <span>Ingested Whitelist</span>
+                  <strong>{participants.length}</strong>
+                </div>
+                <div className="ingest-stat">
+                  <span>Allotted Workstations</span>
+                  <strong style={{ color: "var(--ready)" }}>{joinedCount}</strong>
+                </div>
+                <div className="ingest-stat">
+                  <span>Awaiting Participant Login</span>
+                  <strong style={{ color: "var(--steel)" }}>{Math.max(0, participants.length - joinedCount)}</strong>
+                </div>
+              </div>
+
+              {/* Quick single email add bar */}
+              <div className="quick-add-bar">
+                <input
+                  type="email"
+                  placeholder="Quick add single email to whitelist (e.g. student@college.edu)..."
+                  value={singleEmail}
+                  onChange={(e) => setSingleEmail(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSingleSubmit(); } }}
+                />
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  style={{ padding: "0.4rem 0.85rem", fontSize: "0.82rem" }}
+                  onClick={handleSingleSubmit}
+                  disabled={isSubmitting || !singleEmail.trim()}
+                >
+                  + Add
+                </button>
+              </div>
+
+              {/* Roster table */}
+              <div className="roster-section">
+                <div className="roster-header">
+                  <h3>Ingested Whitelist & Allotment ({filteredList.length})</h3>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                    <input
+                      type="search"
+                      className="roster-search"
+                      placeholder="Filter by email, name, PC..."
+                      value={filterQuery}
+                      onChange={(e) => setFilterQuery(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="button button-primary"
+                      style={{ fontSize: "0.82rem", padding: "0.4rem 0.85rem" }}
+                      onClick={() => setActiveTab("ingest")}
+                    >
+                      📥 Bulk Ingest
+                    </button>
+                  </div>
+                </div>
+
+                <div className="roster-table-wrap">
+                  {filteredList.length === 0 ? (
+                    <div style={{ textAlign: "center", padding: "3rem 1rem", color: "var(--steel)" }}>
+                      <p style={{ margin: "0 0 1rem" }}>
+                        {participants.length === 0
+                          ? "No participant emails ingested yet."
+                          : "No matching participants found for your search."}
+                      </p>
+                      <button
+                        type="button"
+                        className="button button-primary"
+                        onClick={() => setActiveTab("ingest")}
+                      >
+                        Ingest Participant Emails Now
+                      </button>
+                    </div>
+                  ) : (
+                    <table className="roster-table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Email</th>
+                          <th>Participant Name</th>
+                          <th>Allotted PC</th>
+                          <th>Contest Status</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredList.map((p, idx) => {
+                          const st = stations.find((s) => s.email === p.email);
+                          return (
+                            <tr key={p.email}>
+                              <td className="roster-idx">{idx + 1}</td>
+                              <td className="roster-email">{p.email}</td>
+                              <td className="roster-name">
+                                {p.name || st?.name || <span className="muted-text">— Awaiting login —</span>}
+                              </td>
+                              <td className="roster-station">
+                                {p.stationCode || st?.stationCode ? (
+                                  <span className="station-code-badge">{p.stationCode || st?.stationCode}</span>
+                                ) : (
+                                  <span className="muted-text">Auto on login</span>
+                                )}
+                              </td>
+                              <td>
+                                {st ? (
+                                  <span className={`status-pill ${st.status.toLowerCase()}`}>
+                                    {statusLabels[st.status]}
+                                  </span>
+                                ) : p.joined ? (
+                                  <span className="status-pill ready">Joined</span>
+                                ) : (
+                                  <span className="status-pill pending">Awaiting Login</span>
+                                )}
+                              </td>
+                              <td>
+                                {!p.joined ? (
+                                  <button
+                                    type="button"
+                                    className="remove-email-btn"
+                                    onClick={() => handleRemoveEmail(p.email)}
+                                    title="Remove email from whitelist"
+                                  >
+                                    ✕
+                                  </button>
+                                ) : (
+                                  <span className="locked-pill" title="Participant has logged in and has station assigned">Assigned</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Ingest Section */}
+              <div className="ingest-input-section">
+                <label className="section-sublabel">Bulk Ingest Participant Emails</label>
+                <p className="hint" style={{ marginTop: "-0.2rem", marginBottom: "0.5rem" }}>
+                  Enter participant emails (one per line, comma or space-separated), or import a file.
+                </p>
+                <textarea
+                  className="email-textarea"
+                  rows={5}
+                  placeholder={"student1@college.edu\nstudent2@college.edu\nstudent3@college.edu"}
+                  value={bulkText}
+                  onChange={(e) => setBulkText(e.target.value)}
+                />
+                <div className="ingest-actions-row">
+                  <button
+                    type="button"
+                    className="button button-primary"
+                    onClick={handleBulkSubmit}
+                    disabled={isSubmitting || !bulkText.trim()}
+                  >
+                    {isSubmitting ? "Ingesting..." : "Ingest Emails"}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="button button-secondary"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    📁 Import File (.txt / .csv)
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".txt,.csv"
+                    style={{ display: "none" }}
+                    onChange={handleFileUpload}
+                  />
+
+                  {histories.length > 0 ? (
+                    <button
+                      type="button"
+                      className="button button-secondary"
+                      onClick={() => setShowHistory(!showHistory)}
+                    >
+                      {showHistory ? "Hide History" : `📜 Qualifier History (${histories.length})`}
+                    </button>
+                  ) : null}
+                </div>
+
+                {showHistory && histories.length > 0 ? (
+                  <div className="history-loader-box">
+                    <p className="eyebrow" style={{ color: "var(--gold)" }}>Load Qualifiers from History (Round 2)</p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", marginTop: "0.5rem" }}>
+                      {histories.map((h: any) => (
+                        <button
+                          key={h.filename}
+                          type="button"
+                          className="button button-secondary"
+                          style={{ textAlign: "left", justifyContent: "flex-start", fontSize: "0.85rem" }}
+                          onClick={() => handleLoadHistory(h.filename)}
+                          disabled={isSubmitting}
+                        >
+                          Load "{h.competitionName}" ({h.count} Qualifiers) — {new Date(h.timestamp).toLocaleString()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                <div className="single-email-inline">
+                  <input
+                    type="email"
+                    placeholder="Or add single email: student@college.edu"
+                    value={singleEmail}
+                    onChange={(e) => setSingleEmail(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSingleSubmit(); } }}
+                  />
+                  <button
+                    type="button"
+                    className="button button-secondary"
+                    onClick={handleSingleSubmit}
+                    disabled={isSubmitting || !singleEmail.trim()}
+                  >
+                    Add Email
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="modal-actions">
+          {activeTab === "ingest" && participants.length > 0 ? (
+            <button type="button" className="button button-secondary" onClick={() => setActiveTab("roster")}>
+              View Whitelist Roster ({participants.length})
+            </button>
+          ) : null}
+          <button type="button" className="button button-primary" onClick={onClose}>
+            Done
+          </button>
+        </div>
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -868,34 +1341,58 @@ function ParticipantView({ session, snapshot, onLogout }: { session: SessionStat
   }, [session.token, session.user.stationCode]);
 
   const currentStation = snapshot.stations.find((s) => s.stationCode === session.user.stationCode);
-  const isTypingActive = (snapshot.status === "ROUND_1" || snapshot.status === "ROUND_2") && currentStation?.status === "TYPING" && snapshot.activePassage;
+  const isRoundActive = snapshot.status === "ROUND_1" || snapshot.status === "ROUND_2";
   const isCountdownActive = snapshot.status === "STARTING_ROUND_1" || snapshot.status === "STARTING_ROUND_2";
+  const [submittedRounds, setSubmittedRounds] = useState<number[]>([]);
   const [showEndModal, setShowEndModal] = useState(false);
 
+  // When station is set to TYPING by the server, ensure it's not marked as submitted
   useEffect(() => {
-    if (currentStation?.status === "SUBMITTED") {
-      setShowEndModal(true);
+    if (currentStation?.status === "TYPING") {
+      setSubmittedRounds((prev) => prev.filter((r) => r !== snapshot.round));
     }
-  }, [currentStation?.status]);
+  }, [currentStation?.status, snapshot.round]);
+
+  // Check if participant is qualified for round 2
+  const isQualifiedForRound = snapshot.round === 1 ||
+    snapshot.qualifiers.length === 0 ||
+    Boolean(session.user.email && snapshot.qualifiers.includes(session.user.email));
+
+  const hasSubmittedThisRound =
+    submittedRounds.includes(snapshot.round) ||
+    (isRoundActive && currentStation?.status === "SUBMITTED");
+
+  const isTypingActive = isRoundActive &&
+    isQualifiedForRound &&
+    !hasSubmittedThisRound &&
+    currentStation?.status === "TYPING" &&
+    Boolean(snapshot.activePassage);
+
+  useEffect(() => {
+    // Reset end modal when round transitions
+    if (isCountdownActive || isRoundActive) {
+      setShowEndModal(false);
+    }
+  }, [isCountdownActive, isRoundActive, snapshot.round]);
 
   return (
     <main className="participant-shell">
       <section className="participant-panel">
         <div>
-          <p className="eyebrow">Participant Station Console</p>
-          <h1>{session.user.email} • {session.user.stationCode}</h1>
+          <p className="eyebrow">Participant Workstation Console</p>
+          <h1>{session.user.name ? `${session.user.name} (${session.user.email})` : session.user.email} • {session.user.stationCode}</h1>
         </div>
 
         {!systemCheckPassed ? (
           <SystemCheck
             stationCode={session.user.stationCode ?? "PC-01"}
-            email={session.user.email ?? "participant"}
+            email={session.user.name ?? session.user.email ?? "participant"}
             onPassed={() => setSystemCheckPassed(true)}
           />
         ) : (
           <>
             <div className="participant-status-grid">
-              <Metric label="Station Status" valueText={currentStation?.status ?? "READY"} />
+              <Metric label="Station Status" valueText={isTypingActive ? "TYPING" : (currentStation?.status ?? "READY")} />
               <Metric label="Active Phase" valueText={`Round ${snapshot.round}`} />
               <Metric label="Server Timer" valueText={formatTime(snapshot.remainingSeconds)} />
             </div>
@@ -909,23 +1406,47 @@ function ParticipantView({ session, snapshot, onLogout }: { session: SessionStat
 
             {isTypingActive && snapshot.activePassage ? (
               <TypingEngine
+                key={`${snapshot.round}-${snapshot.activePassage.id}`}
                 passage={snapshot.activePassage}
                 token={session.token}
                 remainingSeconds={snapshot.remainingSeconds}
                 durationSeconds={snapshot.durationSeconds}
-                onSubmitted={() => undefined}
+                onSubmitted={() => {
+                  setSubmittedRounds((prev) => [...prev, snapshot.round]);
+                  setShowEndModal(true);
+                }}
               />
             ) : !isCountdownActive ? (
               <div className="waiting-card">
-                {currentStation?.status === "SUBMITTED" ? (
+                {snapshot.status === "FINALIZED" ? (
+                  <>
+                    <strong style={{ color: "var(--crown)", fontSize: "1.1rem" }}>🏆 Contest Officially Finalized!</strong>
+                    <span>
+                      The competition has concluded and official results are frozen.
+                      {currentStation?.status !== "DISQUALIFIED" && !snapshot.flaggedEmails?.includes(currentStation?.email ?? "") && currentStation?.score !== null && currentStation?.score !== undefined ? (
+                        <> Your final Round 2 score: <strong>{currentStation.score} pts</strong> ({currentStation.wpm} WPM @ {currentStation.accuracy}% Accuracy).</>
+                      ) : (
+                        <span style={{ display: "block", marginTop: "0.5rem", color: "var(--danger)" }}>
+                          {currentStation?.status === "DISQUALIFIED" || snapshot.flaggedEmails?.includes(currentStation?.email ?? "")
+                            ? "Notice: You were disqualified due to an anti-cheat violation and are excluded from final standings."
+                            : "You did not qualify for Round 2."}
+                        </span>
+                      )}
+                    </span>
+                  </>
+                ) : hasSubmittedThisRound || (!isRoundActive && currentStation?.status === "SUBMITTED") ? (
                   <>
                     <strong>Attempt Submitted Successfully!</strong>
-                    <span>Score recorded: <strong>{currentStation.score ?? 0} pts</strong> ({currentStation.wpm ?? 0} WPM @ {currentStation.accuracy ?? 100}% Accuracy). Stand by for official Host results.</span>
+                    <span>Score recorded: <strong>{currentStation?.score ?? 0} pts</strong> ({currentStation?.wpm ?? 0} WPM @ {currentStation?.accuracy ?? 100}% Accuracy). Stand by for official Host results.</span>
                   </>
-                ) : currentStation?.status === "DISQUALIFIED" ? (
+                ) : currentStation?.status === "DISQUALIFIED" || (!isQualifiedForRound && snapshot.round === 2) ? (
                   <>
-                    <strong style={{ color: "var(--danger)" }}>Station Disqualified</strong>
-                    <span>An anti-cheat or manual host violation occurred on this computer. Contact the Host if you require assistance.</span>
+                    <strong style={{ color: "var(--danger)" }}>Round 2 Qualification Notice</strong>
+                    <span>
+                      {currentStation?.status === "DISQUALIFIED"
+                        ? "An anti-cheat or manual host violation occurred on this computer. Contact the Host if you require assistance."
+                        : "You did not qualify for Round 2. Thank you for competing in Round 1!"}
+                    </span>
                   </>
                 ) : (
                   <>
@@ -1016,11 +1537,16 @@ function StatusLegend() {
 
 function StationTile({ station, onManage }: { station: StationSnapshot; onManage: () => void }) {
   return (
-    <article className={`station-tile ${station.status.toLowerCase()}`} onClick={onManage} title="Click to reset attempt or disqualify station">
+    <article className={`station-tile ${station.status.toLowerCase()}`} onClick={onManage} title="Click to manage workstation">
       <div className="station-tile-info">
-        <strong>{station.stationCode}</strong>
-        <span className="station-email" title={station.email ?? "Unassigned"}>{station.email ?? "Unassigned"}</span>
-        {station.score ? <small style={{ color: "var(--crown)", fontSize: "0.7rem" }}>{station.score} pts</small> : null}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <strong>{station.stationCode}</strong>
+          {station.score ? <small style={{ color: "var(--crown)", fontSize: "0.75rem", fontWeight: "bold" }}>{station.score} pts</small> : null}
+        </div>
+        <span className="station-name" title={station.name ?? "Unassigned"}>
+          {station.name || (station.email ? "Participant" : "Available PC")}
+        </span>
+        <span className="station-email" title={station.email ?? "Unassigned"}>{station.email ?? "Awaiting contestant"}</span>
       </div>
       <span className="station-status">{statusLabels[station.status]}</span>
     </article>
@@ -1053,6 +1579,174 @@ async function logout(token: string, setSession: (session: SessionState | null) 
   }).catch(() => undefined);
 
   clearSession(setSession);
+}
+
+// ─── Finalize Results Modal ─────────────────────────────────────────
+
+function FinalizeResultsModal({
+  snapshot,
+  onFinalize,
+  onExportCsv,
+  onClose
+}: {
+  snapshot: ContestSnapshot;
+  onFinalize: () => void;
+  onExportCsv: () => void;
+  onClose: () => void;
+}) {
+  // Round 2 finalists only: explicitly exclude any participant who was disqualified, flagged by anti-cheat, or failed to qualify
+  const finalists = useMemo(() => {
+    const flaggedSet = new Set(snapshot.flaggedEmails ?? []);
+    return snapshot.stations
+      .filter((s) => {
+        if (!s.email) return false;
+        if (s.status === "DISQUALIFIED" || flaggedSet.has(s.email)) return false;
+        // If qualifiers were specified, contestant must be in qualifiers list and not disqualified
+        if (snapshot.qualifiers && snapshot.qualifiers.length > 0) {
+          return snapshot.qualifiers.includes(s.email);
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        if ((b.score ?? 0) !== (a.score ?? 0)) return (b.score ?? 0) - (a.score ?? 0);
+        if ((b.accuracy ?? 0) !== (a.accuracy ?? 0)) return (b.accuracy ?? 0) - (a.accuracy ?? 0);
+        return (b.wpm ?? 0) - (a.wpm ?? 0);
+      });
+  }, [snapshot.stations, snapshot.qualifiers, snapshot.flaggedEmails]);
+
+  const disqualifiedRound1Count = useMemo(() => {
+    const flaggedSet = new Set(snapshot.flaggedEmails ?? []);
+    return snapshot.stations.filter((s) => {
+      if (!s.email) return false;
+      if (s.status === "DISQUALIFIED" || flaggedSet.has(s.email)) return true;
+      if (snapshot.qualifiers && snapshot.qualifiers.length > 0) {
+        return !snapshot.qualifiers.includes(s.email);
+      }
+      return false;
+    }).length;
+  }, [snapshot.stations, snapshot.qualifiers, snapshot.flaggedEmails]);
+
+  const isAlreadyFinalized = snapshot.status === "FINALIZED";
+  const top1 = finalists[0];
+  const top2 = finalists[1];
+  const top3 = finalists[2];
+
+  return (
+    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="modal-card wide-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <div>
+            <h2>🏆 {isAlreadyFinalized ? "Official Final Standings" : "Finalize Competition Results"}</h2>
+            <p className="eyebrow" style={{ margin: "0.2rem 0 0" }}>
+              {isAlreadyFinalized ? "Official Round 2 results verified & frozen" : "Round 2 Official Results Review"}
+            </p>
+          </div>
+          <button type="button" className="icon-button" onClick={onClose}>✕</button>
+        </div>
+
+        <div className="exclusion-notice-pill">
+          <span>🛡️</span>
+          <span>
+            Disqualified & anti-cheat flagged participants ({disqualifiedRound1Count}) have been removed from these official results. Only eligible Round 2 finalists ({finalists.length}) are ranked.
+          </span>
+        </div>
+
+        {finalists.length >= 1 && (
+          <div className="podium-grid">
+            {top2 ? (
+              <div className="podium-card rank-2">
+                <div className="podium-medal">🥈</div>
+                <div className="podium-name">{top2.name || top2.email}</div>
+                <div className="podium-meta">{top2.stationCode} • {top2.wpm ?? 0} WPM ({top2.accuracy ?? 0}%)</div>
+                <div className="podium-score">{top2.score ?? 0} pts</div>
+              </div>
+            ) : (
+              <div className="podium-card" style={{ opacity: 0.3 }}><div className="podium-meta">No Runner-up</div></div>
+            )}
+
+            {top1 ? (
+              <div className="podium-card rank-1">
+                <div className="podium-medal">🥇</div>
+                <div className="podium-name">{top1.name || top1.email}</div>
+                <div className="podium-meta">{top1.stationCode} • {top1.wpm ?? 0} WPM ({top1.accuracy ?? 0}%)</div>
+                <div className="podium-score">{top1.score ?? 0} pts</div>
+              </div>
+            ) : null}
+
+            {top3 ? (
+              <div className="podium-card rank-3">
+                <div className="podium-medal">🥉</div>
+                <div className="podium-name">{top3.name || top3.email}</div>
+                <div className="podium-meta">{top3.stationCode} • {top3.wpm ?? 0} WPM ({top3.accuracy ?? 0}%)</div>
+                <div className="podium-score">{top3.score ?? 0} pts</div>
+              </div>
+            ) : (
+              <div className="podium-card" style={{ opacity: 0.3 }}><div className="podium-meta">No 3rd Place</div></div>
+            )}
+          </div>
+        )}
+
+        <div className="results-table-wrap">
+          <table className="results-table">
+            <thead>
+              <tr>
+                <th style={{ width: "3.5rem" }}>Rank</th>
+                <th>Participant</th>
+                <th>Email</th>
+                <th>PC Station</th>
+                <th>WPM</th>
+                <th>Accuracy</th>
+                <th>Final Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {finalists.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: "center", padding: "2rem", color: "var(--ash)" }}>
+                    No eligible submissions recorded for Round 2.
+                  </td>
+                </tr>
+              ) : (
+                finalists.map((f, idx) => (
+                  <tr key={f.stationCode}>
+                    <td>
+                      <span className="results-rank-badge">
+                        {idx === 0 ? "🥇 #1" : idx === 1 ? "🥈 #2" : idx === 2 ? "🥉 #3" : `#${idx + 1}`}
+                      </span>
+                    </td>
+                    <td><strong style={{ color: "#fff" }}>{f.name || "Participant"}</strong></td>
+                    <td style={{ fontFamily: "monospace", color: "var(--steel)" }}>{f.email}</td>
+                    <td><span className="station-code-badge">{f.stationCode}</span></td>
+                    <td>{f.wpm ?? 0}</td>
+                    <td>{f.accuracy ?? 0}%</td>
+                    <td><span className="results-score-highlight">{f.score ?? 0} pts</span></td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="modal-actions">
+          {!isAlreadyFinalized ? (
+            <button
+              type="button"
+              className="button button-primary"
+              onClick={onFinalize}
+            >
+              🔒 Confirm & Freeze Final Results
+            </button>
+          ) : null}
+          <button type="button" className="button button-secondary" onClick={onExportCsv}>
+            📥 Export Official CSV
+          </button>
+          <button type="button" className="button button-secondary" onClick={onClose}>
+            {isAlreadyFinalized ? "Done" : "Cancel"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default App;

@@ -8,7 +8,9 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace @blitzkrieg/frontend",
+    "start": "node scripts/dev.mjs",
+    "dev": "node scripts/dev.mjs",
+    "dev:all": "node scripts/dev.mjs",
     "dev:frontend": "npm run dev --workspace @blitzkrieg/frontend",
     "dev:backend": "npm run dev --workspace @blitzkrieg/backend",
     "build": "npm run build --workspaces --if-present",

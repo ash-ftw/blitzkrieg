@@ -33,8 +33,10 @@ export function runFullMockCompetition(): SimulationReport {
   createRoom("Mock Rehearsal Competition", emails);
 
   // Step 2: Simulate participant joins (dynamic station assignment)
-  for (const email of emails) {
-    const station = assignNextStation(email);
+  for (let i = 0; i < emails.length; i++) {
+    const email = emails[i]!;
+    const name = `Participant ${i + 1}`;
+    const station = assignNextStation(email, name);
     station.status = "READY";
   }
 
@@ -57,10 +59,10 @@ export function runFullMockCompetition(): SimulationReport {
 
     const wpm = 45 + ((i * 7) % 65); // 45 to 110 WPM
     const accuracy = 92 + ((i * 3) % 8); // 92% to 99%
-    const charCount = 270;
-    const durationMs = Math.round(((charCount / 5) / wpm) * 60000);
+    const durationMs = 60000;
 
-    const typedText = generateTypedPassage("The Essence of Systems", charCount, accuracy);
+    const activeContent1 = getContestSnapshot().activePassage?.content ?? "Systems engineering and concurrent design.";
+    const typedText = generateTypedPassage(activeContent1, wpm, accuracy);
 
     submitAttempt(email, stationCode, typedText, durationMs);
     round1Submissions++;
@@ -81,10 +83,10 @@ export function runFullMockCompetition(): SimulationReport {
 
     const wpm = 60 + ((i * 5) % 55); // 60 to 115 WPM
     const accuracy = 94 + ((i * 2) % 6);
-    const charCount = 410;
-    const durationMs = Math.round(((charCount / 5) / wpm) * 60000);
+    const durationMs = 180000;
 
-    const typedText = generateTypedPassage("Low Latency Networking & High Concurrency", charCount, accuracy);
+    const activeContent2 = getContestSnapshot().activePassage?.content ?? "Low Latency Networking";
+    const typedText = generateTypedPassage(activeContent2, wpm * 3, accuracy);
 
     submitAttempt(qualifierEmail, station.stationCode, typedText, durationMs);
     round2Submissions++;
@@ -123,14 +125,11 @@ export function runFullMockCompetition(): SimulationReport {
   };
 }
 
-function generateTypedPassage(title: string, length: number, accuracy: number): string {
-  const chars = `${title}: systems engineering and concurrent design fundamentals.`;
-  let result = chars.substring(0, length);
-  if (result.length < length) {
-    result = result.padEnd(length, ".");
+function generateTypedPassage(activeContent: string, wordCount: number, accuracy: number): string {
+  const words = activeContent.trim().split(/\s+/);
+  const selectedWords = words.slice(0, Math.max(1, wordCount));
+  if (accuracy < 98 && selectedWords.length > 2) {
+    selectedWords[selectedWords.length - 1] = selectedWords[selectedWords.length - 1] + "x";
   }
-  if (accuracy < 98 && result.length > 2) {
-    return result.slice(0, -1) + "x";
-  }
-  return result;
+  return selectedWords.join(" ");
 }

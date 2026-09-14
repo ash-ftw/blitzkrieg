@@ -3,17 +3,19 @@ export type Role = "HOST" | "PARTICIPANT";
 export interface AuthUser {
   id: string;
   username: string;
+  name?: string | null;
   role: Role;
   email: string | null;
   stationCode: string | null;
 }
 
 export interface LoginRequest {
-  // Host login: username + password
+  // Host login: username or email + password
   username?: string;
   password?: string;
-  // Participant login: email + roomPin
+  // Participant login: email + name
   email?: string;
+  name?: string;
   roomPin?: string;
 }
 
@@ -63,6 +65,7 @@ export type ViolationType =
 export interface StationSnapshot {
   stationCode: string;
   email: string | null;
+  name?: string | null;
   status: StationStatus;
   wpm: number | null;
   accuracy: number | null;
@@ -83,10 +86,12 @@ export interface Passage {
 export interface AttemptSubmissionRequest {
   typedText: string;
   durationMs: number;
+  round?: 1 | 2;
 }
 
 export interface AttemptResult {
   email: string;
+  name?: string | null;
   stationCode: string;
   round: 1 | 2;
   wpm: number;
@@ -119,12 +124,21 @@ export interface QualificationSummary {
   qualifiers: string[];
 }
 
-// ─── Room types ─────────────────────────────────────────────────────
+// ─── Participant types ──────────────────────────────────────────────
 
 export interface JoinedParticipant {
   email: string;
+  name?: string | null;
   stationCode: string;
   joinedAt: string;
+}
+
+export interface IngestedParticipant {
+  email: string;
+  name: string | null;
+  stationCode: string | null;
+  joined: boolean;
+  joinedAt: string | null;
 }
 
 export interface RoomSnapshot {
@@ -156,5 +170,8 @@ export interface ContestSnapshot {
   stations: StationSnapshot[];
   incidents: IncidentReport[];
   auditLogs: AuditLogEntry[];
-  room: RoomSnapshot | null;
+  ingestedEmails: string[];
+  room?: RoomSnapshot | null;
+  flaggedEmails?: string[];
 }
+

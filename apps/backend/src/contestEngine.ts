@@ -4,7 +4,7 @@ import type { AttemptResult, ContestSnapshot, ContestStatus, IncidentReport, Pas
 import { addAuditLog, getAuditLogs } from "./auditLog.js";
 import { getRandomPassage } from "./passages.js";
 import { listStations, getStation, clearAllStations, assignStation } from "./stations.js";
-import { getRoomSnapshot } from "./room.js";
+import { getIngestedEmails, getRoomSnapshot } from "./room.js";
 
 interface ContestState {
   name: string;
@@ -36,6 +36,25 @@ const state: ContestState = {
 
 const incidents: IncidentReport[] = [];
 const attempts = new Map<string, AttemptResult>();
+const flaggedEmails = new Set<string>();
+const flaggedStations = new Set<string>();
+
+/**
+ * Calculate how many words were actually entered correctly.
+ * Compares whitespace-delimited tokens in typedText against target passage tokens.
+ */
+export function calculateCorrectWords(targetText: string, typedText: string): number {
+  const targetWords = targetText.trim().split(/\s+/);
+  const typedWords = typedText.trim().length > 0 ? typedText.trim().split(/\s+/) : [];
+  let correctWords = 0;
+  const wordsToCompare = Math.min(targetWords.length, typedWords.length);
+  for (let i = 0; i < wordsToCompare; i++) {
+    if (typedWords[i] === targetWords[i]) {
+      correctWords++;
+    }
+  }
+  return correctWords;
+}
 
 let stateChangeCallback: (() => void) | null = null;
 let timerTickCallback: ((remainingSeconds: number, status: ContestStatus) => void) | null = null;
@@ -89,20 +108,39 @@ export function startRound(round: 1 | 2, actor: string = "HOST") {
 
   addAuditLog(actor, "START_ROUND", `ROUND_${round}`, `Initiating Round ${round} with a 5s countdown`);
 
-  // Set eligible stations to TYPING
+  // Clear previous attempts for this round to ensure a fresh start
+  for (const [key] of Array.from(attempts.keys())) {
+    if (key.endsWith(`-${round}`)) {
+      attempts.delete(key);
+    }
+  }
+
+  // Set eligible stations to TYPING and reset per-round metrics
   const stations = listStations();
   for (const stationSnapshot of stations) {
     const station = getStation(stationSnapshot.stationCode);
     if (!station) continue;
 
     if (round === 1) {
-      if (station.status === "READY" || station.status === "ASSIGNED") {
+      if (station.status !== "DISQUALIFIED" && station.status !== "OFFLINE") {
         station.status = "TYPING";
+        station.wpm = null;
+        station.accuracy = null;
+        station.score = null;
       }
     } else {
       // Round 2: Only qualified participants
-      if (station.email && state.qualifiers.includes(station.email)) {
+      const isQualified = state.qualifiers.length > 0
+        ? Boolean(station.email && state.qualifiers.includes(station.email))
+        : Boolean(station.email && station.status !== "DISQUALIFIED" && station.status !== "OFFLINE");
+
+      if (isQualified) {
         station.status = "TYPING";
+        station.wpm = null;
+        station.accuracy = null;
+        station.score = null;
+      } else {
+        station.status = "DISQUALIFIED";
       }
     }
   }
@@ -118,6 +156,31 @@ export function startRound(round: 1 | 2, actor: string = "HOST") {
         state.remainingSeconds = state.durationSeconds;
         state.roundStartedAt = Date.now();
         addAuditLog("SYSTEM", "ROUND_BEGIN", `ROUND_${round}`, `Round ${round} typing phase started (${state.durationSeconds}s)`);
+
+        // Re-confirm all eligible stations are in TYPING status with clean metrics for active round
+        for (const sSnapshot of listStations()) {
+          const s = getStation(sSnapshot.stationCode);
+          if (!s || !s.email) continue;
+          if (round === 1) {
+            if (s.status !== "DISQUALIFIED" && s.status !== "OFFLINE") {
+              s.status = "TYPING";
+              s.wpm = null;
+              s.accuracy = null;
+              s.score = null;
+            }
+          } else {
+            const isQualified = state.qualifiers.length > 0
+              ? state.qualifiers.includes(s.email)
+              : s.status !== "DISQUALIFIED" && s.status !== "OFFLINE";
+            if (isQualified) {
+              s.status = "TYPING";
+              s.wpm = null;
+              s.accuracy = null;
+              s.score = null;
+            }
+          }
+        }
+
         notifyStateChange();
         return;
       }
@@ -184,10 +247,11 @@ export function restartRound(round: 1 | 2, actor: string = "HOST") {
       station.score = null;
       if (round === 1) {
         station.status = "TYPING";
-      } else if (station.email && state.qualifiers.includes(station.email)) {
-        station.status = "TYPING";
       } else {
-        station.status = "READY";
+        const isQualified = state.qualifiers.length > 0
+          ? Boolean(station.email && state.qualifiers.includes(station.email))
+          : Boolean(station.email);
+        station.status = isQualified ? "TYPING" : "DISQUALIFIED";
       }
     }
   }
@@ -238,7 +302,9 @@ export function resetSingleStation(stationCode: string, actor: string = "HOST") 
 
   if (station.email) {
     attempts.delete(`${station.email}-${state.round}`);
+    flaggedEmails.delete(station.email);
   }
+  flaggedStations.delete(stationCode);
 
   addAuditLog(actor, "RESET_STATION_ATTEMPT", stationCode, `Reset station attempt for ${station.email ?? stationCode}`);
   notifyStateChange();
@@ -257,7 +323,14 @@ export function calculateQualifiers(count: number = 20, actor: string = "HOST") 
   const allStations = listStations();
   
   const stations = allStations
-    .filter((s) => s.email && s.score !== null && s.status !== "DISQUALIFIED")
+    .filter(
+      (s) =>
+        s.email &&
+        s.score !== null &&
+        s.status !== "DISQUALIFIED" &&
+        !flaggedEmails.has(s.email) &&
+        !flaggedStations.has(s.stationCode)
+    )
     .sort((a, b) => {
       if ((b.score ?? 0) !== (a.score ?? 0)) {
         return (b.score ?? 0) - (a.score ?? 0);
@@ -295,7 +368,16 @@ export function calculateQualifiers(count: number = 20, actor: string = "HOST") 
     const station = getStation(s.stationCode);
     if (!station || !station.email) continue;
     
-    if (state.qualifiers.includes(station.email)) {
+    if (
+      flaggedEmails.has(station.email) ||
+      flaggedStations.has(station.stationCode) ||
+      station.status === "DISQUALIFIED"
+    ) {
+      station.status = "DISQUALIFIED";
+      station.score = null;
+      station.wpm = null;
+      station.accuracy = null;
+    } else if (state.qualifiers.includes(station.email)) {
       station.status = "ASSIGNED";
       station.score = null;
       station.wpm = null;
@@ -307,7 +389,7 @@ export function calculateQualifiers(count: number = 20, actor: string = "HOST") 
 
   state.status = "QUALIFICATION";
 
-  addAuditLog(actor, "CALCULATE_QUALIFIERS", `TOP_${count}`, `Selected ${state.qualifiers.length} qualifiers for Round 2.`);
+  addAuditLog(actor, "CALCULATE_QUALIFIERS", `TOP_${count}`, `Selected ${state.qualifiers.length} qualifiers for Round 2 (anti-cheat flagged participants excluded).`);
   notifyStateChange();
   return state.qualifiers;
 }
@@ -316,8 +398,43 @@ export function submitAttempt(
   email: string,
   stationCode: string,
   typedText: string,
-  elapsedTimeMs: number
+  elapsedTimeMs: number,
+  submittedRound?: 1 | 2
 ): AttemptResult {
+  // Reject attempt immediately if participant or station is flagged by anti-cheat or marked DISQUALIFIED
+  if (flaggedEmails.has(email) || flaggedStations.has(stationCode)) {
+    throw new Error("Disqualified: Station or participant has an anti-cheat security violation.");
+  }
+
+  const station = getStation(stationCode);
+  if (station && station.status === "DISQUALIFIED") {
+    throw new Error("Disqualified: Station is disqualified and cannot submit.");
+  }
+
+  // If request specifies a round that is not the active round, ignore or return existing
+  if (submittedRound && submittedRound !== state.round) {
+    const existing = attempts.get(`${email}-${submittedRound}`);
+    if (existing) {
+      return existing;
+    }
+    throw new Error(`Contest is currently in Round ${state.round}, ignoring submission for Round ${submittedRound}`);
+  }
+
+  // Reject submission if not in active round or grace period
+  if (
+    state.status !== "ROUND_1" &&
+    state.status !== "ROUND_2" &&
+    state.status !== "ROUND_1_COMPLETE" &&
+    state.status !== "ROUND_2_COMPLETE"
+  ) {
+    throw new Error(`Contest is not actively accepting submissions (status: ${state.status})`);
+  }
+
+  // If already submitted this round, return existing attempt to prevent duplicate writes
+  const existingAttempt = attempts.get(`${email}-${state.round}`);
+  if (existingAttempt) {
+    return existingAttempt;
+  }
   const passage = state.activePassage;
   if (!passage) {
     throw new Error("No active passage found for this contest round.");
@@ -336,19 +453,31 @@ export function submitAttempt(
     }
   }
 
-  // WPM calculation: (typed characters / 5) / (duration in minutes)
-  const durationInMinutes = Math.max(elapsedTimeMs / 1000 / 60, 0.05);
-  const grossWpm = (totalTyped / 5) / durationInMinutes;
-  const netWpm = Math.max(0, Math.round(grossWpm));
+  // Count words actually entered correctly:
+  const correctWords = calculateCorrectWords(targetText, typedText);
 
-  // Accuracy calculation: (correctChars / totalTyped) * 100
+  const roundTotalSeconds = state.durationSeconds > 0
+    ? state.durationSeconds
+    : (state.round === 1 ? 60 : 180);
+
+  const elapsedMinutes = elapsedTimeMs / 1000 / 60;
+  const cappedMinutes = Math.min(elapsedMinutes, roundTotalSeconds / 60);
+  const durationInMinutes = Math.max(cappedMinutes, 0.05); // floor to avoid divide-by-near-zero
+
+  // WPM based on how many words actually entered correctly:
+  const netWpm = Math.max(0, Math.round(correctWords / durationInMinutes));
+
+  // Accuracy calculation: percentage of typed characters that are correct
   const accuracy = totalTyped > 0 ? Number(((correctChars / totalTyped) * 100).toFixed(1)) : 100;
 
   // Final score formula: WPM * Accuracy
   const score = Math.round(netWpm * accuracy);
 
+  const name = station?.name ?? null;
+
   const attemptResult: AttemptResult = {
     email,
+    name,
     stationCode,
     round: state.round,
     wpm: netWpm,
@@ -361,7 +490,6 @@ export function submitAttempt(
   attempts.set(`${email}-${state.round}`, attemptResult);
 
   // Update station record
-  const station = getStation(stationCode);
   if (station) {
     station.status = "SUBMITTED";
     station.wpm = netWpm;
@@ -369,7 +497,7 @@ export function submitAttempt(
     station.score = score;
   }
 
-  addAuditLog(email, "SUBMIT_ATTEMPT", stationCode, `Submitted Round ${state.round}: ${netWpm} WPM, ${accuracy}% Accuracy, Score ${score}`);
+  addAuditLog(email, "SUBMIT_ATTEMPT", stationCode, `Submitted Round ${state.round}: ${netWpm} WPM (${correctWords} correct words), ${accuracy}% Accuracy, Score ${score}`);
   notifyStateChange();
   return attemptResult;
 }
@@ -380,6 +508,13 @@ export function recordViolation(
   type: ViolationType,
   details: string
 ) {
+  if (email && email !== "HOST") {
+    flaggedEmails.add(email);
+  }
+  if (stationCode && stationCode !== "HOST-CONSOLE") {
+    flaggedStations.add(stationCode);
+  }
+
   const incident: IncidentReport = {
     id: `inc-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
     email,
@@ -390,18 +525,26 @@ export function recordViolation(
   };
 
   incidents.unshift(incident);
-  if (incidents.length > 30) {
+  if (incidents.length > 50) {
     incidents.pop();
   }
 
-  addAuditLog(email, "VIOLATION_TRIGGERED", stationCode, `${type}: ${details}`);
+  addAuditLog(email, "ANTI_CHEAT_FLAGGED", stationCode, `${type}: ${details}. Station disqualified and excluded from official results.`);
 
-  if (type === "PASTE" || type === "COPY" || type === "MULTIPLE_SESSION" || type === "TAB_SWITCH" || type === "WINDOW_BLUR") {
-    const station = getStation(stationCode);
-    if (station && station.status !== "DISQUALIFIED") {
-      station.status = "DISQUALIFIED";
-      addAuditLog("SYSTEM", "AUTO_DISQUALIFY", stationCode, `Station disqualified due to ${type} security violation.`);
-    }
+  // Immediately disqualify station and wipe metrics
+  const station = getStation(stationCode);
+  if (station) {
+    station.status = "DISQUALIFIED";
+    station.score = null;
+    station.wpm = null;
+    station.accuracy = null;
+  }
+
+  // Purge any submitted attempts and remove from qualifiers
+  if (email) {
+    attempts.delete(`${email}-1`);
+    attempts.delete(`${email}-2`);
+    state.qualifiers = state.qualifiers.filter((e) => e !== email);
   }
 
   notifyStateChange();
@@ -412,6 +555,13 @@ export function disqualifyStation(stationCode: string, reason: string, actor: st
   const station = getStation(stationCode);
   if (station) {
     station.status = "DISQUALIFIED";
+    station.score = null;
+    station.wpm = null;
+    station.accuracy = null;
+    if (station.email) {
+      flaggedEmails.add(station.email);
+    }
+    flaggedStations.add(stationCode);
     addAuditLog(actor, "DISQUALIFY_STATION", stationCode, reason);
     recordViolation(station.email ?? "UNKNOWN", stationCode, "RESTART_ATTEMPT", reason);
   }
@@ -433,7 +583,30 @@ export function transferParticipant(fromStationCode: string, toStationCode: stri
 
 export function finalizeContest(actor: string = "HOST") {
   state.status = "FINALIZED";
-  addAuditLog(actor, "FINALIZE_CONTEST", "COMPETITION", "Contest finalized. Official results frozen.");
+
+  const stations = listStations();
+  for (const sSnapshot of stations) {
+    const station = getStation(sSnapshot.stationCode);
+    if (!station || !station.email) continue;
+
+    const isFlaggedOrDq =
+      station.status === "DISQUALIFIED" ||
+      flaggedEmails.has(station.email) ||
+      flaggedStations.has(station.stationCode);
+
+    const isEligible = state.round === 2 || state.qualifiers.length > 0
+      ? state.qualifiers.includes(station.email) && !isFlaggedOrDq
+      : !isFlaggedOrDq;
+
+    if (!isEligible) {
+      station.score = null;
+      station.wpm = null;
+      station.accuracy = null;
+      station.status = "DISQUALIFIED";
+    }
+  }
+
+  addAuditLog(actor, "FINALIZE_CONTEST", "COMPETITION", "Contest finalized. Official results frozen (anti-cheat flagged and disqualified participants excluded).");
   notifyStateChange();
 }
 
@@ -454,6 +627,8 @@ export function resetContestState(actor: string = "HOST") {
 
   incidents.length = 0;
   attempts.clear();
+  flaggedEmails.clear();
+  flaggedStations.clear();
 
   clearAllStations();
 
@@ -462,14 +637,27 @@ export function resetContestState(actor: string = "HOST") {
 }
 
 export function exportCsvResults(): string {
+  let stations = listStations().filter((s) => {
+    if (!s.email) return false;
+    // Exclude any participant or station flagged by anti-cheat or disqualified
+    if (s.status === "DISQUALIFIED") return false;
+    if (flaggedEmails.has(s.email) || flaggedStations.has(s.stationCode)) return false;
 
-  const stations = listStations()
-    .filter((s) => s.email)
-    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+    // In Round 2 or when finalized, exclude participants who failed to qualify
+    if (state.round === 2 || state.status === "ROUND_2_COMPLETE" || state.status === "FINALIZED") {
+      if (state.qualifiers.length > 0) {
+        return state.qualifiers.includes(s.email);
+      }
+    }
+    return true;
+  });
 
-  const headers = ["Rank", "Email", "Station Code", "Status", "WPM", "Accuracy (%)", "Final Score"];
+  stations.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+
+  const headers = ["Rank", "Name", "Email", "Station Code", "Status", "WPM", "Accuracy (%)", "Final Score"];
   const rows = stations.map((s, index) => [
     index + 1,
+    `"${(s.name ?? "").replace(/"/g, '""')}"`,
     s.email,
     s.stationCode,
     s.status,
@@ -503,7 +691,9 @@ export function getContestSnapshot(): ContestSnapshot {
     stations,
     incidents,
     auditLogs: getAuditLogs(),
-    room: getRoomSnapshot()
+    ingestedEmails: getIngestedEmails(),
+    room: getRoomSnapshot(),
+    flaggedEmails: Array.from(flaggedEmails)
   };
 }
 
@@ -521,6 +711,18 @@ export function getIncidentsRaw(): IncidentReport[] {
   return incidents;
 }
 
+export function getFlaggedEmailsRaw(): string[] {
+  return Array.from(flaggedEmails);
+}
+
+export function restoreFlaggedEmails(emails: string[]) {
+  flaggedEmails.clear();
+  flaggedStations.clear();
+  for (const email of emails) {
+    flaggedEmails.add(email);
+  }
+}
+
 /** Restore contest engine state from a persisted snapshot. */
 export function restoreContestEngine(persisted: {
   name: string;
@@ -535,6 +737,7 @@ export function restoreContestEngine(persisted: {
   roundStartedAt: number | null;
   attempts: Array<[string, AttemptResult]>;
   incidents: IncidentReport[];
+  flaggedEmails?: string[];
 }) {
   // Stop any running timer
   if (state.timerInterval) {
@@ -562,6 +765,15 @@ export function restoreContestEngine(persisted: {
   // Restore incidents
   incidents.length = 0;
   incidents.push(...persisted.incidents);
+
+  // Restore flagged participants
+  flaggedEmails.clear();
+  flaggedStations.clear();
+  if (persisted.flaggedEmails) {
+    for (const email of persisted.flaggedEmails) {
+      flaggedEmails.add(email);
+    }
+  }
 
   // If a round was actively running when the crash happened, do NOT
   // restart the timer — the host should manually re-start the round.

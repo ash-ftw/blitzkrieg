@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-09-07T09:17:49.576Z",
+  "competitionName": "Championship 2026",
+  "qualifiers": [
+    {
+      "email": "qualifier1@test.com",
+      "score": 237,
+      "wpm": 26,
+      "accuracy": 9.1
+    },
+    {
+      "email": "qualifier2@test.com",
+      "score": 175,
+      "wpm": 17,
+      "accuracy": 10.3
+    }
+  ]
+}

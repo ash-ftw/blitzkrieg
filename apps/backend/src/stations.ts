@@ -12,6 +12,7 @@ interface StationRecord {
   hostname: string;
   status: StationStatus;
   email: string | null;
+  name: string | null;
   activeSession: string | null;
   lastHeartbeatAt: Date | null;
   wpm: number | null;
@@ -28,7 +29,7 @@ let nextStationNumber = 1;
  * Assign the next available station to a participant.
  * Creates PC-01, PC-02, etc. in the order participants join.
  */
-export function assignNextStation(email: string): StationRecord {
+export function assignNextStation(email: string, name?: string | null): StationRecord {
   const stationCode = `PC-${String(nextStationNumber).padStart(2, "0")}`;
   nextStationNumber++;
 
@@ -37,6 +38,7 @@ export function assignNextStation(email: string): StationRecord {
     hostname: `LAB-${stationCode}`,
     status: "READY",
     email,
+    name: name?.trim() || null,
     activeSession: null,
     lastHeartbeatAt: new Date(),
     wpm: null,
@@ -78,6 +80,7 @@ export function findStationByEmail(email: string): StationRecord | null {
 
 export interface StationAssignmentRequest {
   email: string | null;
+  name?: string | null;
 }
 
 export interface StationHeartbeatRequest {
@@ -85,9 +88,12 @@ export interface StationHeartbeatRequest {
   sessionToken?: string;
 }
 
-export function assignStation(stationCode: string, email: string | null) {
+export function assignStation(stationCode: string, email: string | null, name?: string | null) {
   const station = requireStation(stationCode);
   station.email = email?.trim().toLowerCase() || null;
+  if (name !== undefined) {
+    station.name = name?.trim() || null;
+  }
   station.activeSession = null;
   station.status = station.email ? "READY" : "AVAILABLE";
   station.lastHeartbeatAt = new Date();
@@ -152,6 +158,7 @@ function toSnapshot(station: StationRecord): StationSnapshot {
   return {
     stationCode: station.stationCode,
     email: station.email,
+    name: station.name,
     status: station.status,
     wpm: station.wpm,
     accuracy: station.accuracy,
@@ -178,6 +185,7 @@ export function restoreStationsFromSnapshot(records: Array<{
   hostname: string;
   status: StationStatus;
   email: string | null;
+  name?: string | null;
   activeSession: string | null;
   lastHeartbeatAt: string | null;
   wpm: number | null;
@@ -191,6 +199,7 @@ export function restoreStationsFromSnapshot(records: Array<{
       hostname: record.hostname,
       status: record.status,
       email: record.email,
+      name: record.name ?? null,
       activeSession: record.activeSession,
       lastHeartbeatAt: record.lastHeartbeatAt ? new Date(record.lastHeartbeatAt) : null,
       wpm: record.wpm,

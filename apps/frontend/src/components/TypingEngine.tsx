@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { Passage, ViolationType } from "@blitzkrieg/shared";
+import type { AttemptResult, Passage, ViolationType } from "@blitzkrieg/shared";
 
 interface TypingEngineProps {
   passage: Passage;
@@ -14,10 +14,13 @@ export function TypingEngine({ passage, token, remainingSeconds, durationSeconds
   const [startTime, setStartTime] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submittedResult, setSubmittedResult] = useState<AttemptResult | null>(null);
   const [localSeconds, setLocalSeconds] = useState(remainingSeconds);
   const [violationAlert, setViolationAlert] = useState<string | null>(null);
   const [capsLockOn, setCapsLockOn] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const displayRef = useRef<HTMLDivElement>(null);
+  const cursorRef = useRef<HTMLSpanElement>(null);
   const typedTextRef = useRef(typedText);
   const startTimeRef = useRef(startTime);
   const isSubmittedRef = useRef(isSubmitted);
@@ -39,6 +42,17 @@ export function TypingEngine({ passage, token, remainingSeconds, durationSeconds
     isSubmittingRef.current = isSubmitting;
   }, [isSubmitting]);
 
+  // Reset engine states whenever passage changes (e.g. entering Round 2)
+  useEffect(() => {
+    setIsSubmitted(false);
+    setIsSubmitting(false);
+    setTypedText("");
+    setStartTime(null);
+    setViolationAlert(null);
+    setSubmittedResult(null);
+    setLocalSeconds(remainingSeconds);
+  }, [passage.id]);
+
   // Guaranteed submission on unmount (when timer ends and backend unmounts this component)
   useEffect(() => {
     return () => {
@@ -52,13 +66,14 @@ export function TypingEngine({ passage, token, remainingSeconds, durationSeconds
           },
           body: JSON.stringify({
             typedText: typedTextRef.current,
-            durationMs: elapsedMs
+            durationMs: elapsedMs,
+            round: passage.round
           }),
           keepalive: true
         }).catch(() => undefined);
       }
     };
-  }, [token, durationSeconds]);
+  }, [token, durationSeconds, passage.round]);
 
   const targetText = passage.content;
 
@@ -81,7 +96,7 @@ export function TypingEngine({ passage, token, remainingSeconds, durationSeconds
   // Smooth local 1-second countdown ticker
   useEffect(() => {
     if (localSeconds <= 0) {
-      if (!isSubmitted && !isSubmitting && typedText.length > 0) {
+      if (!isSubmitted && !isSubmitting) {
         submitAttempt();
       }
       return;
@@ -92,7 +107,25 @@ export function TypingEngine({ passage, token, remainingSeconds, durationSeconds
     }, 1000);
 
     return () => clearInterval(ticker);
-  }, [localSeconds, isSubmitted, isSubmitting, typedText.length]);
+  }, [localSeconds, isSubmitted, isSubmitting]);
+
+  // Keep active typing cursor in view as participant progresses through the overfitted passage
+  useEffect(() => {
+    if (cursorRef.current && displayRef.current) {
+      const cursor = cursorRef.current;
+      const container = displayRef.current;
+      const cursorTop = cursor.offsetTop;
+      const containerScroll = container.scrollTop;
+      const containerHeight = container.clientHeight;
+
+      if (cursorTop - containerScroll > containerHeight - 70 || cursorTop - containerScroll < 30) {
+        container.scrollTo({
+          top: Math.max(0, cursorTop - containerHeight / 2),
+          behavior: "smooth"
+        });
+      }
+    }
+  }, [typedText.length]);
 
   function logViolation(type: ViolationType, details: string) {
     setViolationAlert(`🚨 Anti-Cheat Flag: ${details}`);
@@ -137,7 +170,7 @@ export function TypingEngine({ passage, token, remainingSeconds, durationSeconds
     const elapsedMs = startTime ? Date.now() - startTime : durationSeconds * 1000;
 
     try {
-      await fetch("/api/contest/submit", {
+      const response = await fetch("/api/contest/submit", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -145,9 +178,14 @@ export function TypingEngine({ passage, token, remainingSeconds, durationSeconds
         },
         body: JSON.stringify({
           typedText,
-          durationMs: elapsedMs
+          durationMs: elapsedMs,
+          round: passage.round
         })
       });
+      const data = await response.json().catch(() => null);
+      if (data?.result) {
+        setSubmittedResult(data.result);
+      }
       setIsSubmitted(true);
       onSubmitted();
     } catch (err) {
@@ -183,6 +221,17 @@ export function TypingEngine({ passage, token, remainingSeconds, durationSeconds
     logViolation(actionType, details);
   }
 
+  // Words actually entered correctly:
+  const targetWords = targetText.trim().split(/\s+/);
+  const typedWords = typedText.trim().length > 0 ? typedText.trim().split(/\s+/) : [];
+  let correctWordsCount = 0;
+  const wordsToCompare = Math.min(targetWords.length, typedWords.length);
+  for (let i = 0; i < wordsToCompare; i++) {
+    if (typedWords[i] === targetWords[i]) {
+      correctWordsCount++;
+    }
+  }
+
   // Calculate live stats
   let correctCount = 0;
   let errorCount = 0;
@@ -195,15 +244,21 @@ export function TypingEngine({ passage, token, remainingSeconds, durationSeconds
   }
 
   const elapsedMinutes = startTime ? Math.max((Date.now() - startTime) / 1000 / 60, 0.05) : 0.05;
-  const liveWpm = Math.round((typedText.length / 5) / elapsedMinutes);
+  const liveWpm = Math.round(correctWordsCount / elapsedMinutes);
   const liveAccuracy = typedText.length > 0 ? ((correctCount / typedText.length) * 100).toFixed(1) : "100.0";
   const progressPercent = Math.min(100, Math.round((typedText.length / targetText.length) * 100));
 
   if (isSubmitted) {
+    const finalWpm = submittedResult
+      ? submittedResult.wpm
+      : Math.round(correctWordsCount / (durationSeconds / 60));
+    const finalAccuracy = submittedResult
+      ? submittedResult.accuracy
+      : liveAccuracy;
     return (
       <div className="waiting-card">
         <strong>Attempt Submitted Successfully!</strong>
-        <span>Recorded Performance: <strong>{liveWpm} WPM</strong> @ <strong>{liveAccuracy}% Accuracy</strong> ({errorCount} Errors). Stand by for official Host results.</span>
+        <span>Recorded Performance: <strong>{finalWpm} WPM</strong> ({correctWordsCount} correct words) @ <strong>{finalAccuracy}% Accuracy</strong> ({errorCount} Errors). Stand by for official Host results.</span>
       </div>
     );
   }
@@ -254,6 +309,7 @@ export function TypingEngine({ passage, token, remainingSeconds, durationSeconds
 
       {/* Interactive Display Passage */}
       <div
+        ref={displayRef}
         className="passage-display"
         onClick={() => inputRef.current?.focus()}
         onCopy={(e) => handleClipboardAction("COPY", "Copy shortcut attempted", e)}
@@ -269,7 +325,11 @@ export function TypingEngine({ passage, token, remainingSeconds, durationSeconds
           const isCursor = index === typedText.length;
 
           return (
-            <span key={index} className={`char ${charClass} ${isCursor ? "char-cursor" : ""}`}>
+            <span
+              key={index}
+              ref={isCursor ? cursorRef : null}
+              className={`char ${charClass} ${isCursor ? "char-cursor" : ""}`}
+            >
               {char}
             </span>
           );
@@ -294,15 +354,9 @@ export function TypingEngine({ passage, token, remainingSeconds, durationSeconds
       />
 
       <div className="typing-footer">
-        <p className="hint">Keep typing. Backspace is enabled. Do not switch tabs or windows.</p>
-        <button
-          type="button"
-          className="button button-primary"
-          onClick={submitAttempt}
-          disabled={isSubmitting || typedText.length === 0}
-        >
-          {isSubmitting ? "Submitting..." : "Submit Attempt"}
-        </button>
+        <p className="hint">
+          ⚡ <strong>Continuous Overfitted Challenge:</strong> Manual submission is disabled. Type continuously with maximum speed and precision—your attempt will be submitted automatically when the countdown timer reaches 00:00.
+        </p>
       </div>
     </div>
   );

@@ -1,0 +1,14 @@
+[
+  {
+    "token": "7746ffba-0540-42e0-941c-758bfa2fa833",
+    "user": {
+      "id": "host-max@host.com",
+      "username": "max@host.com",
+      "name": "Max Verstappen",
+      "role": "HOST",
+      "email": "max@host.com",
+      "stationCode": null
+    },
+    "expiresAt": "2026-09-11T08:50:16.759Z"
+  }
+]

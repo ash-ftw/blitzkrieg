@@ -6,6 +6,8 @@
  * - Participant: logs in with email + room PIN (dynamic)
  */
 
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from "node:crypto";
 import type { AuthUser, LoginRequest, LoginResponse, Role } from "@blitzkrieg/shared";
 import {
@@ -19,13 +21,13 @@ import { assignNextStation, findStationByEmail } from "./stations.js";
 
 // ─── Host credentials ───────────────────────────────────────────────
 
-interface HostUser {
-  id: string;
-  username: string;
-  passwordHash: string;
-}
+export const ALLOWED_HOST_EMAILS = new Set([
+  "max@host.com",
+  "lec@host.com",
+  "kimi@host.com"
+]);
 
-const hostUser: HostUser = createHostUser("host-1", "host", "host123");
+const HOST_PASSWORD_HASH = hashPassword("host123");
 
 // ─── Sessions ───────────────────────────────────────────────────────
 
@@ -47,70 +49,115 @@ const sessions = new Map<string, Session>();
 /** Map of email → session token (to prevent duplicate logins). */
 const participantSessionTokens = new Map<string, string>();
 
+const HOST_SESSIONS_FILE = resolve(process.cwd(), "host-sessions.json");
+
+function loadPersistedHostSessions() {
+  try {
+    if (existsSync(HOST_SESSIONS_FILE)) {
+      const raw = readFileSync(HOST_SESSIONS_FILE, "utf-8");
+      const list: Array<{ token: string; user: AuthUser; expiresAt: string }> = JSON.parse(raw);
+      const now = Date.now();
+      for (const item of list) {
+        const expiresAt = new Date(item.expiresAt);
+        if (expiresAt.getTime() > now) {
+          sessions.set(item.token, {
+            token: item.token,
+            user: item.user,
+            expiresAt
+          });
+        }
+      }
+    }
+  } catch (err) {
+    console.error("[auth] Failed to load persisted host sessions:", err);
+  }
+}
+
+function persistHostSessions() {
+  try {
+    const hostList: Array<{ token: string; user: AuthUser; expiresAt: string }> = [];
+    const now = Date.now();
+    for (const s of sessions.values()) {
+      if (s.user.role === "HOST" && s.expiresAt.getTime() > now) {
+        hostList.push({
+          token: s.token,
+          user: s.user,
+          expiresAt: s.expiresAt.toISOString()
+        });
+      }
+    }
+    writeFileSync(HOST_SESSIONS_FILE, JSON.stringify(hostList, null, 2), "utf-8");
+  } catch (err) {
+    console.error("[auth] Failed to persist host sessions:", err);
+  }
+}
+
+// Load host sessions on startup
+loadPersistedHostSessions();
+
 // ─── Login ──────────────────────────────────────────────────────────
 
 export function login(request: LoginRequest): LoginResponse {
   pruneExpiredSessions();
 
-  // ─ Host login (username + password) ─
-  if (request.username) {
-    return loginAsHost(request.username, request.password ?? "");
+  // ─ Host login (username/email + password) ─
+  if (request.password !== undefined || request.username) {
+    const identifier = request.username ?? request.email ?? "";
+    return loginAsHost(identifier, request.password ?? "");
   }
 
-  // ─ Participant login (email + roomPin) ─
+  // ─ Participant login (email + name) ─
   if (request.email) {
-    return loginAsParticipant(request.email, request.roomPin ?? "");
+    return loginAsParticipant(request.email, request.name);
   }
 
-  throw new AuthError("Provide username (host) or email (participant) to log in", 400);
+  throw new AuthError("Provide host credentials or participant email to log in", 400);
 }
 
-function loginAsHost(username: string, password: string): LoginResponse {
-  if (username.trim().toLowerCase() !== hostUser.username.toLowerCase()) {
-    throw new AuthError("Invalid username or password", 401);
+function loginAsHost(identifier: string, password: string): LoginResponse {
+  const normalised = identifier.trim().toLowerCase();
+
+  if (!ALLOWED_HOST_EMAILS.has(normalised)) {
+    throw new AuthError("Access denied: Only max@host.com, lec@host.com, and kimi@host.com have host access.", 403);
   }
 
-  if (!verifyPassword(password, hostUser.passwordHash)) {
-    throw new AuthError("Invalid username or password", 401);
+  if (!verifyPassword(password, HOST_PASSWORD_HASH)) {
+    throw new AuthError("Invalid host password", 401);
   }
 
   const token = randomUUID();
   const expiresAt = new Date(Date.now() + sessionDurationMs);
+  const hostNames: Record<string, string> = {
+    "max@host.com": "Max Verstappen",
+    "lec@host.com": "Charles Leclerc",
+    "kimi@host.com": "Kimi Antonelli"
+  };
+
   const authUser: AuthUser = {
-    id: hostUser.id,
-    username: hostUser.username,
+    id: `host-${normalised}`,
+    username: normalised,
+    name: hostNames[normalised] ?? normalised,
     role: "HOST",
-    email: null,
+    email: normalised,
     stationCode: null
   };
 
   sessions.set(token, { token, user: authUser, expiresAt });
+  persistHostSessions();
 
   return { token, user: authUser, expiresAt: expiresAt.toISOString() };
 }
 
-function loginAsParticipant(email: string, roomPin: string): LoginResponse {
+function loginAsParticipant(email: string, name?: string): LoginResponse {
   const normalised = email.trim().toLowerCase();
 
-  // Validate room exists
-  const room = getRoom();
-  if (!room) {
-    throw new AuthError("No active competition room. Please wait for the host to create one.", 400);
+  if (ALLOWED_HOST_EMAILS.has(normalised)) {
+    throw new AuthError("Host accounts cannot log in as contest participants. Switch to Host Login.", 403);
   }
 
-  // Validate room is open
-  if (!room.isOpen) {
-    throw new AuthError("The competition room is closed. No more participants can join.", 403);
-  }
-
-  // Validate PIN
-  if (!validateRoomPin(roomPin)) {
-    throw new AuthError("Invalid room PIN", 401);
-  }
-
-  // Validate email is whitelisted
+  // Validate email is ingested / whitelisted
   if (!isEmailWhitelisted(normalised)) {
-    throw new AuthError("Your email is not registered for this competition. Contact the host.", 403);
+    throw new AuthError("Your email is not registered for this competition. Please contact the host.", 403);
   }
 
   // Check for duplicate session
@@ -119,28 +166,34 @@ function loginAsParticipant(email: string, roomPin: string): LoginResponse {
     throw new AuthError("This email already has an active session. Contact the host if this is an error.", 409);
   }
 
+  const participantName = name?.trim() || null;
+
   // Check if already joined (has a station assigned)
   if (hasAlreadyJoined(normalised)) {
-    // They had a session before but it expired — let them rejoin their existing station
     const existingStation = findStationByEmail(normalised);
     if (existingStation) {
-      return createParticipantSession(normalised, existingStation.stationCode);
+      if (participantName && !existingStation.name) {
+        existingStation.name = participantName;
+      }
+      recordParticipantJoin(normalised, existingStation.stationCode, participantName ?? existingStation.name);
+      return createParticipantSession(normalised, existingStation.stationCode, existingStation.name ?? participantName);
     }
   }
 
-  // Assign a new station dynamically
-  const station = assignNextStation(normalised);
-  recordParticipantJoin(normalised, station.stationCode);
+  // Assign a new station dynamically (PC-01, PC-02, etc.)
+  const station = assignNextStation(normalised, participantName);
+  recordParticipantJoin(normalised, station.stationCode, participantName);
 
-  return createParticipantSession(normalised, station.stationCode);
+  return createParticipantSession(normalised, station.stationCode, participantName);
 }
 
-function createParticipantSession(email: string, stationCode: string): LoginResponse {
+function createParticipantSession(email: string, stationCode: string, name?: string | null): LoginResponse {
   const token = randomUUID();
   const expiresAt = new Date(Date.now() + sessionDurationMs);
   const authUser: AuthUser = {
     id: `participant-${email}`,
-    username: email,
+    username: name || email,
+    name: name || null,
     role: "PARTICIPANT",
     email,
     stationCode
@@ -161,7 +214,14 @@ export function getSession(token: string | undefined): Session | null {
     return null;
   }
 
-  return sessions.get(token) ?? null;
+  let session = sessions.get(token) ?? null;
+  if (!session) {
+    // Attempt re-loading host sessions from disk in case of reload
+    loadPersistedHostSessions();
+    session = sessions.get(token) ?? null;
+  }
+
+  return session;
 }
 
 export function logout(token: string | undefined) {
@@ -171,6 +231,10 @@ export function logout(token: string | undefined) {
 
   const session = sessions.get(token);
   sessions.delete(token);
+
+  if (session?.user.role === "HOST") {
+    persistHostSessions();
+  }
 
   if (session?.user.role === "PARTICIPANT" && session.user.email) {
     participantSessionTokens.delete(session.user.email);
@@ -200,10 +264,15 @@ export function listParticipants(): ParticipantSummary[] {
   }));
 }
 
-/** Clear all sessions (used on contest reset). */
+/** Clear all participant sessions (used on contest reset). Preserves host sessions. */
 export function clearAllSessions() {
-  sessions.clear();
+  for (const [token, session] of Array.from(sessions.entries())) {
+    if (session.user.role !== "HOST") {
+      sessions.delete(token);
+    }
+  }
   participantSessionTokens.clear();
+  persistHostSessions();
 }
 
 // ─── Error class ────────────────────────────────────────────────────
@@ -218,14 +287,6 @@ export class AuthError extends Error {
 }
 
 // ─── Internal helpers ───────────────────────────────────────────────
-
-function createHostUser(id: string, username: string, password: string): HostUser {
-  return {
-    id,
-    username,
-    passwordHash: hashPassword(password)
-  };
-}
 
 function hashPassword(password: string) {
   const salt = randomBytes(16).toString("hex");

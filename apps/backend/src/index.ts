@@ -12,6 +12,7 @@ import {
   finalizeContest,
   getAttemptsRaw,
   getContestStateRaw,
+  getFlaggedEmailsRaw,
   getIncidentsRaw,
   markReady,
   onStateChange,
@@ -42,8 +43,11 @@ import {
   closeRoom,
   createRoom,
   destroyRoom,
+  getIngestedEmails,
+  getIngestedParticipants,
   getRoomRaw,
   getRoomSnapshot,
+  ingestEmails,
   openRoom,
   removeParticipant,
   restoreRoom,
@@ -100,6 +104,7 @@ registerPersistenceCallbacks(
         hostname: s.hostname,
         status: s.status,
         email: s.email,
+        name: s.name,
         activeSession: s.activeSession,
         lastHeartbeatAt: s.lastHeartbeatAt?.toISOString() ?? null,
         wpm: s.wpm,
@@ -110,7 +115,8 @@ registerPersistenceCallbacks(
       attempts: Array.from(attemptsRaw.entries()),
       incidents: [...incidentsRaw],
       auditLogs: [...logsRaw],
-      room: getRoomRaw()
+      room: getRoomRaw(),
+      flaggedEmails: getFlaggedEmailsRaw()
     };
   },
   // Restore: replay persisted snapshot into all modules
@@ -123,7 +129,8 @@ registerPersistenceCallbacks(
     restoreContestEngine({
       ...snapshot.contest,
       attempts: snapshot.attempts,
-      incidents: snapshot.incidents
+      incidents: snapshot.incidents,
+      flaggedEmails: snapshot.flaggedEmails
     });
   }
 );
@@ -306,6 +313,32 @@ app.post("/room/open", async (request, reply) => {
 
 // ─── Participant routes ─────────────────────────────────────────────
 
+app.post<{ Body: { emails: string[] } }>("/participants/ingest", async (request, reply) => {
+  const session = authorize(request, reply, ["HOST"]);
+  if (!session) return reply;
+
+  try {
+    const { added, total } = ingestEmails(request.body.emails ?? []);
+    io.emit("contest:state", buildSnapshot());
+    return { ok: true, added, total, participants: getIngestedParticipants() };
+  } catch (error) {
+    return sendKnownError(error, reply);
+  }
+});
+
+app.delete<{ Params: { email: string } }>("/participants/:email", async (request, reply) => {
+  const session = authorize(request, reply, ["HOST"]);
+  if (!session) return reply;
+
+  try {
+    removeParticipant(decodeURIComponent(request.params.email));
+    io.emit("contest:state", buildSnapshot());
+    return { ok: true, participants: getIngestedParticipants() };
+  } catch (error) {
+    return sendKnownError(error, reply);
+  }
+});
+
 app.get("/participants", async (request, reply) => {
   const session = authorize(request, reply, ["HOST"]);
 
@@ -314,7 +347,7 @@ app.get("/participants", async (request, reply) => {
   }
 
   return {
-    participants: listParticipants()
+    participants: getIngestedParticipants()
   };
 });
 
@@ -521,7 +554,8 @@ app.post<{ Body: AttemptSubmissionRequest }>("/contest/submit", async (request, 
       session.user.email,
       session.user.stationCode,
       request.body.typedText ?? "",
-      request.body.durationMs ?? 60000
+      request.body.durationMs ?? 60000,
+      request.body.round
     );
 
     return { result };

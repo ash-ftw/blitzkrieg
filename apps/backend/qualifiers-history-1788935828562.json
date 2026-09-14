@@ -1,0 +1,42 @@
+{
+  "timestamp": "2026-09-09T06:37:08.562Z",
+  "competitionName": "Championship 2026",
+  "qualifiers": [
+    {
+      "email": "60@ft.in",
+      "score": 2000,
+      "wpm": 20,
+      "accuracy": 100
+    },
+    {
+      "email": "1@ft.in",
+      "score": 1889,
+      "wpm": 19,
+      "accuracy": 99.4
+    },
+    {
+      "email": "44@ft.in",
+      "score": 989,
+      "wpm": 10,
+      "accuracy": 98.9
+    },
+    {
+      "email": "47@ft.in",
+      "score": 833,
+      "wpm": 9,
+      "accuracy": 92.6
+    },
+    {
+      "email": "53@ft.in",
+      "score": 726,
+      "wpm": 8,
+      "accuracy": 90.8
+    },
+    {
+      "email": "22@ft.in",
+      "score": 0,
+      "wpm": 0,
+      "accuracy": 50
+    }
+  ]
+}
