@@ -637,7 +637,7 @@ export function resetContestState(actor: string = "HOST") {
 }
 
 export function exportCsvResults(): string {
-  let stations = listStations().filter((s) => {
+  const stations = listStations().filter((s) => {
     if (!s.email) return false;
     // Exclude any participant or station flagged by anti-cheat or disqualified
     if (s.status === "DISQUALIFIED") return false;

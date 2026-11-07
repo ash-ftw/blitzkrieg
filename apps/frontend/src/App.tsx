@@ -1,6 +1,6 @@
 import { type ChangeEvent, type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { io } from "socket.io-client";
-import type { AuditLogEntry, AuthUser, ContestSnapshot, IncidentReport, LoginResponse, RoomSnapshot, StationSnapshot, StationStatus } from "@blitzkrieg/shared";
+import type { AuditLogEntry, AuthUser, ContestSnapshot, IncidentReport, LoginResponse, StationSnapshot, StationStatus } from "@blitzkrieg/shared";
 import { SystemCheck } from "./components/SystemCheck";
 import { TypingEngine } from "./components/TypingEngine";
 
@@ -865,9 +865,9 @@ function EmailIngestionModal({
   const [singleEmail, setSingleEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
-  const [participants, setParticipants] = useState<any[]>([]);
+  const [participants, setParticipants] = useState<Array<{ email: string; stationCode?: string | null; name?: string | null; hasActiveSession?: boolean; joined?: boolean }>>([]);
   const [filterQuery, setFilterQuery] = useState("");
-  const [histories, setHistories] = useState<any[]>([]);
+  const [histories, setHistories] = useState<Array<{ filename: string; timestamp: string; competitionName: string; count: number }>>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [activeTab, setActiveTab] = useState<"roster" | "ingest">("roster");
 
@@ -931,8 +931,9 @@ function EmailIngestionModal({
         }
         setMessage({ text: data.message ?? "Failed to ingest emails", type: "error" });
       }
-    } catch (err: any) {
-      setMessage({ text: err.message ?? "Error ingesting emails", type: "error" });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Error ingesting emails";
+      setMessage({ text: msg, type: "error" });
     } finally {
       setIsSubmitting(false);
     }
@@ -1006,8 +1007,9 @@ function EmailIngestionModal({
         const err = await res.json();
         setMessage({ text: err.message ?? "Failed to load qualifiers from history", type: "error" });
       }
-    } catch (err: any) {
-      setMessage({ text: err.message ?? "Error loading qualifiers", type: "error" });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Error loading qualifiers";
+      setMessage({ text: msg, type: "error" });
     } finally {
       setIsSubmitting(false);
     }
@@ -1263,7 +1265,7 @@ function EmailIngestionModal({
                   <div className="history-loader-box">
                     <p className="eyebrow" style={{ color: "var(--gold)" }}>Load Qualifiers from History (Round 2)</p>
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", marginTop: "0.5rem" }}>
-                      {histories.map((h: any) => (
+                      {histories.map((h) => (
                         <button
                           key={h.filename}
                           type="button"

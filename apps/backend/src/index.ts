@@ -3,7 +3,7 @@ import Fastify, { type FastifyReply, type FastifyRequest } from "fastify";
 import { Server } from "socket.io";
 import type { AttemptSubmissionRequest, LoginRequest, Role, ViolationType } from "@blitzkrieg/shared";
 import { getAuditLogs, getLogsRaw, restoreLogs } from "./auditLog.js";
-import { AuthError, clearAllSessions, getSession, listParticipants, login, logout, type Session } from "./auth.js";
+import { AuthError, clearAllSessions, getSession, login, logout, type Session } from "./auth.js";
 import { buildSnapshot } from "./contestSnapshot.js";
 import {
   calculateQualifiers,
@@ -43,7 +43,6 @@ import {
   closeRoom,
   createRoom,
   destroyRoom,
-  getIngestedEmails,
   getIngestedParticipants,
   getRoomRaw,
   getRoomSnapshot,
@@ -227,7 +226,7 @@ app.get("/history/qualifiers", async (request, reply) => {
     }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
     return { histories };
-  } catch (error) {
+  } catch {
     return { histories: [] };
   }
 });
@@ -239,7 +238,7 @@ app.post<{ Body: { filename: string } }>("/room/create-from-history", async (req
   try {
     const filepath = resolve(process.cwd(), request.body.filename);
     const data = JSON.parse(readFileSync(filepath, "utf-8"));
-    const emails = data.qualifiers.map((q: any) => q.email);
+    const emails = data.qualifiers.map((q: { email: string }) => q.email);
 
     // Completely reset the contest and all stations before creating the new room
     resetContestState();

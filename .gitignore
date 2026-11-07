@@ -6,3 +6,12 @@ dist
 npm-debug.log*
 coverage
 *.tsbuildinfo
+
+# Runtime state & contest history (protects participant and host session data)
+blitzkrieg-snapshot.json
+host-sessions.json
+qualifiers-history-*.json
+*-snapshot.json
+*.session.json
+scratch/
+

@@ -9,13 +9,12 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from "node:crypto";
-import type { AuthUser, LoginRequest, LoginResponse, Role } from "@blitzkrieg/shared";
+import type { AuthUser, LoginRequest, LoginResponse } from "@blitzkrieg/shared";
 import {
   getRoom,
   hasAlreadyJoined,
   isEmailWhitelisted,
-  recordParticipantJoin,
-  validateRoomPin
+  recordParticipantJoin
 } from "./room.js";
 import { assignNextStation, findStationByEmail } from "./stations.js";
 

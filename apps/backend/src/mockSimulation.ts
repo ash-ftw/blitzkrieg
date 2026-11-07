@@ -1,5 +1,5 @@
 import { calculateQualifiers, finalizeContest, getContestSnapshot, recordViolation, startRound, submitAttempt } from "./contestEngine.js";
-import { assignNextStation, getStation, listStations } from "./stations.js";
+import { assignNextStation, listStations } from "./stations.js";
 import { createRoom } from "./room.js";
 
 export interface SimulationReport {

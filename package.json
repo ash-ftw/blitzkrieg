@@ -2,7 +2,27 @@
   "name": "blitzkrieg",
   "version": "0.1.0",
   "private": true,
-  "description": "LAN-first competitive typing event platform.",
+  "description": "LAN-first competitive typing event platform for high-stakes college lab tournaments.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ash-ftw/blitzkrieg.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ash-ftw/blitzkrieg/issues"
+  },
+  "homepage": "https://github.com/ash-ftw/blitzkrieg#readme",
+  "keywords": [
+    "competitive-typing",
+    "typing-competition",
+    "lan-first",
+    "college-tournament",
+    "fastify",
+    "socket-io",
+    "react",
+    "anti-cheat",
+    "proctoring"
+  ],
   "workspaces": [
     "packages/*",
     "apps/*"
